@@ -19,7 +19,7 @@
   .summary { margin: 28px 0 14px; font-size: 19px; color: var(--ink-2); max-width: 70ch; }
   .summary strong { color: var(--ink); }
   .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .heat-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
+  .heat-wrap { position: relative; overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
   table.heat { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 720px; font-size: 15px; }
   .heat th, .heat td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--line); }
   .heat thead th { font-size: 13px; font-weight: 600; color: var(--muted); vertical-align: bottom; line-height: 1.2; }
@@ -75,6 +75,86 @@
   .saved-list span { color: var(--muted); font-weight: 400; font-size: 14px; }
   .method summary { cursor: pointer; font-weight: 600; }
   .method p, .method li { color: var(--ink-2); font-size: 15px; }
+
+  /* Response tracking */
+  .collect { position: relative; margin-top: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px 24px; }
+  .collect-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .collect h2, .plan-section h2 { font-size: 20px; margin: 0 0 4px; }
+  .collect-rows { display: grid; gap: 8px; }
+  .crow { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr) 150px 110px; gap: 14px; align-items: center; font-size: 15px; }
+  .cname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cbar { height: 10px; background: var(--none); border-radius: 5px; overflow: hidden; }
+  .cbar i { display: block; height: 100%; background: var(--rail); border-radius: 5px; transition: width .2s; }
+  .cbar i.ok { background: var(--ok); } .cbar i.watch { background: var(--watch); } .cbar i.barrier { background: var(--barrier); }
+  .crate { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .input-sm { padding: 7px 10px; font-size: 14px; }
+  /* Action picks and plan */
+  .picks { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+  .pick { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; padding: 6px 8px; margin: 0 -8px; border-radius: 8px; cursor: pointer; font-size: 15px; color: var(--ink-2); }
+  .pick:hover { background: var(--paper); }
+  .pick input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--ink); }
+  .pick input:checked + span { color: var(--ink); font-weight: 600; }
+  .custom-add { display: flex; gap: 8px; margin-top: 10px; }
+  .custom-add input { flex: 1; min-width: 0; }
+  .plan-section { margin-top: 36px; }
+  .plan-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  table.plan-table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 680px; }
+  .plan-table th { text-align: left; font-size: 13px; color: var(--muted); font-weight: 600; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .plan-table td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .plan-table tr:last-child td { border-bottom: 0; }
+  .plan-table td .n { display: block; font-size: 13px; color: var(--muted); }
+  .plan-table td:nth-child(3) { width: 180px; } .plan-table td:nth-child(4) { width: 160px; }
+  /* Share dialog */
+  .dlg { border: 0; border-radius: var(--r-lg); padding: 24px; width: min(640px, calc(100vw - 32px)); color: var(--ink); }
+  .dlg::backdrop { background: rgba(20, 27, 45, .5); }
+  .dlg-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .dlg-head h2 { margin: 0; font-size: 22px; }
+  .share-grid { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 22px; align-items: start; }
+  .qr-box svg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: var(--r-md); }
+  .linkrow { display: flex; gap: 8px; } .linkrow input { flex: 1; min-width: 0; }
+  /* Presentation */
+  .deck { position: fixed; inset: 0; z-index: 100; background: var(--paper); display: grid; grid-template-rows: 1fr auto; }
+  body.deck-open { overflow: hidden; }
+  .deck-stage { overflow: auto; padding: 5vh 7vw 2vh; }
+  .deck-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 24px; border-top: 1px solid var(--line); background: var(--surface); font-variant-numeric: tabular-nums; color: var(--muted); }
+  .slide { max-width: 1200px; margin: 0 auto; }
+  .slide h2 { font-size: clamp(32px, 4.2vw, 60px); margin: 0 0 3vh; line-height: 1.05; }
+  .slide h3 { font-size: clamp(18px, 1.6vw, 24px); margin: 4vh 0 1.5vh; }
+  .slide ul { font-size: clamp(18px, 1.7vw, 26px); line-height: 1.45; padding-left: 1.2em; margin: 0; display: grid; gap: .5em; }
+  .slide-kicker { color: var(--muted); font-size: clamp(14px, 1.2vw, 18px); margin: 0 0 6px; }
+  .slide-summary { font-size: clamp(18px, 1.8vw, 28px); color: var(--ink-2); max-width: 46ch; margin: 0 0 4vh; }
+  .slide-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+  .slide-idx { text-align: right; } .slide-idx b { display: block; font-family: var(--display); font-size: clamp(48px, 6vw, 96px); line-height: 1; }
+  .slide-idx span { color: var(--muted); }
+  .slide-verdict { font-size: clamp(20px, 2vw, 30px); margin: 4vh 0 0; max-width: 50ch; }
+  .slide .line { transform-origin: left top; }
+  .slide > .line .dot { width: 54px; height: 54px; font-size: 20px; border-width: 6px; }
+  .slide > .line .station.stop .dot { width: 66px; height: 66px; }
+  .slide > .line::before { top: 27px; height: 6px; }
+  .slide > .line .name { font-size: clamp(14px, 1.3vw, 20px); } .slide > .line .score { font-size: clamp(14px, 1.2vw, 18px); }
+  .slide > .line .stop-label { font-size: 14px; }
+  .slide-teams { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3vh 4vw; }
+  .mini-name { font-weight: 700; font-size: clamp(16px, 1.4vw, 22px); display: block; margin-bottom: 8px; }
+  .slide-plan { width: 100%; border-collapse: collapse; font-size: clamp(15px, 1.3vw, 20px); }
+  .slide-plan th, .slide-plan td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .slide-plan th { color: var(--muted); font-size: .8em; }
+  @media (max-width: 860px) {
+    .crow { grid-template-columns: minmax(0, 1fr) 100px; }
+    .crow .cbar { grid-column: 1 / -1; grid-row: 2; }
+    .crow .crate { grid-column: 1; grid-row: 3; font-size: 14px; }
+    .crow .csize { grid-column: 2; grid-row: 1 / span 1; }
+    .crow { padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+    .share-grid { grid-template-columns: minmax(0, 1fr); } .qr-box { max-width: 220px; }
+    .slide-teams { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media print {
+    .collect { border: 0; padding: 0; }
+    .crow { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 160px; }
+    .plan-table input { display: none; }
+    table.plan-table { min-width: 0; }
+    body.print-plan main > *:not(#results):not(.d-head):not(#printDate), body.print-plan #results > *:not(#plan) { display: none !important; }
+    .deck, .dlg { display: none !important; }
+  }
   @media (max-width: 860px) {
     .input-grid, .teams { grid-template-columns: minmax(0, 1fr); }
   }
@@ -96,8 +176,10 @@
   <div class="d-head">
     <div><p class="sub" id="kicker"></p><h1 id="title"></h1></div>
     <div class="actions-row no-print" id="exports" hidden>
+      <button class="btn btn-secondary btn-sm" type="button" id="shareBtn"></button>
       <button class="btn btn-secondary btn-sm" type="button" id="csvOut"></button>
-      <button class="btn btn-primary btn-sm" type="button" id="printOut"></button>
+      <button class="btn btn-secondary btn-sm" type="button" id="printOut"></button>
+      <button class="btn btn-primary btn-sm" type="button" id="presentBtn"></button>
     </div>
   </div>
   <p class="print-only note" id="printDate"></p>
@@ -122,6 +204,14 @@
         </div>
         <span class="label" style="margin-top:14px" id="demoLabel"></span>
         <div><button class="btn btn-secondary" type="button" id="demo"></button></div>
+        <div id="backupBox" style="margin-top:14px">
+          <span class="label" id="backupLabel"></span>
+          <p class="note" id="backupHint" style="margin:4px 0 10px"></p>
+          <div class="actions-row">
+            <button class="btn btn-secondary btn-sm" type="button" id="backupDl"></button>
+            <label class="btn btn-quiet btn-sm file-btn"><input type="file" id="backupFile" accept=".json,application/json"><span id="backupUpLabel"></span></label>
+          </div>
+        </div>
       </div>
     </div>
     <div class="report" id="report" aria-live="polite"></div>
@@ -137,355 +227,23 @@
 
 <footer id="footer" class="site"></footer>
 
+<dialog id="shareDlg" class="dlg" aria-labelledby="shareTitle">
+  <div class="dlg-head"><h2 id="shareTitle"></h2><button class="btn btn-quiet btn-sm" type="button" id="shareClose"></button></div>
+  <div id="shareBody"></div>
+</dialog>
+
+<div id="deck" class="deck" hidden role="dialog" aria-modal="true" aria-label="Presentation">
+  <div class="deck-stage" id="deckStage"></div>
+  <div class="deck-bar">
+    <button class="btn btn-quiet btn-sm" type="button" id="deckExit"></button>
+    <span id="deckCount"></span>
+    <div class="actions-row"><button class="btn btn-secondary btn-sm" type="button" id="deckPrev"></button><button class="btn btn-primary btn-sm" type="button" id="deckNext"></button></div>
+  </div>
+</div>
+
 <script src="assets/core.js"></script>
 <script src="assets/page.js"></script>
-<script>
-(function () {
-  const T = {
-    fr: {
-      kicker: "Tableau de bord", demoTeams: ["Finance", "Achats", "Supply chain", "Service client", "IT"], noSurvey: "Résultats du baromètre", demoName: "Exemple : déploiement d'un nouvel ERP",
-      codes: "Codes de réponse", codesHint: "Collez les codes reçus, ou des mails entiers : les codes sont repérés et analysés automatiquement. Ils restent enregistrés dans ce navigateur.", expand: "Ajouter ou modifier des réponses", loaded: (k) => `${k} réponse${k > 1 ? "s" : ""} chargée${k > 1 ? "s" : ""}`, detail: "Détail par question", low: "point le plus faible", pick: "Ou ouvrez un de vos baromètres :", codesN: (k) => `${k} réponse${k > 1 ? "s" : ""}`,
-      analyse: "Analyser", clear: "Tout effacer", cleared: "Données effacées",
-      csv: "Ou importez un fichier", csvHint: "Export Microsoft Forms ou Google Forms : une colonne TEAM (ou EQUIPE) et une colonne par question, de A1 à R3, avec des notes de 1 à 5.",
-      csvBtn: "Importer un CSV", tpl: "Télécharger le modèle", demoL: "Pas encore de réponses ?", demo: "Charger un exemple",
-      ok: (k) => `${k} réponse${k > 1 ? "s" : ""} valide${k > 1 ? "s" : ""}`, bad: (k) => `${k} code${k > 1 ? "s" : ""} illisible${k > 1 ? "s" : ""}`,
-      dup: (k) => `${k} doublon${k > 1 ? "s" : ""} ignoré${k > 1 ? "s" : ""}`, other: (k) => `${k} code${k > 1 ? "s" : ""} d'un autre baromètre`,
-      csvBad: "Le fichier n'a pas les bonnes colonnes. Téléchargez le modèle pour voir le format attendu.",
-      csvRows: (k) => `${k} ligne${k > 1 ? "s" : ""} importée${k > 1 ? "s" : ""}`, csvErr: (k) => `${k} ligne${k > 1 ? "s" : ""} incomplète${k > 1 ? "s" : ""}`,
-      mixed: "Les codes viennent de plusieurs baromètres. Ouvrez le tableau de bord depuis le lien de votre baromètre pour les trier.",
-      empty: "Collez des codes ou chargez l'exemple pour voir le profil ADKAR de chaque équipe.",
-      summary: (n, teams, blocked, idx) => `<strong>${n}</strong> réponses de <strong>${teams}</strong> équipe${teams > 1 ? "s" : ""}. Indice d'adoption global : <strong>${idx}/100</strong>. ${blocked ? `<strong>${blocked}</strong> équipe${blocked > 1 ? "s ont" : " a"} un point de blocage.` : "Aucune équipe n'a de point de blocage."}`,
-      all: "Toutes les équipes", team: "Équipe", resist: "Résistance", index: "Indice", resp: (k) => `${k} réponse${k > 1 ? "s" : ""}`,
-      adoption: "indice d'adoption", stopLabel: "Blocage", watchLabel: "Point d'attention",
-      verdictB: (s) => `L'équipe décroche à l'étape ${s}. Tant que ce point n'est pas réglé, les étapes suivantes progresseront peu.`,
-      verdictW: (s) => `Pas de blocage net, mais l'étape ${s} est fragile.`,
-      verdictOk: "Toutes les étapes sont acquises. Il reste à ancrer le changement dans la durée.",
-      actions: "Actions recommandées", resistance: "Résistance", barrierAt: "Étape à traiter", noneB: "Aucune",
-      waiting: (k) => `En attente de réponses (moins de ${k}, masquées pour préserver l'anonymat)`,
-      csvOut: "Exporter en CSV", printOut: "Exporter en PDF", printDate: (d) => `Rapport généré le ${d}`,
-      mTitle: "Comment les résultats sont calculés",
-      mBody: [
-        "Chaque étape du modèle (Conscience, Désir, Connaissance, Capacité, Renforcement) est mesurée par 3 affirmations notées de 1 à 5. Le score d'une étape est la moyenne de ses réponses.",
-        "En dessous de 3, l'étape est bloquante. Entre 3 et 4, elle est à surveiller. À partir de 4, elle est acquise.",
-        "Les étapes se suivent : le point de blocage est la première étape bloquante. S'il n'y en a pas, c'est la première étape à surveiller.",
-        "La résistance combine le désir (deux tiers) et la conscience (un tiers) : élevée en dessous de 3, modérée en dessous de 3,8.",
-        "L'indice d'adoption ramène la moyenne des 5 étapes sur 100. Une équipe n'est affichée qu'à partir de 3 réponses.",
-      ],
-    },
-    en: {
-      kicker: "Dashboard", demoTeams: ["Finance", "Procurement", "Supply chain", "Customer service", "IT"], noSurvey: "Barometer results", demoName: "Example: new ERP rollout",
-      codes: "Response codes", codesHint: "Paste the codes you received, or whole emails: codes are picked out and analysed automatically. They stay saved in this browser.", expand: "Add or edit answers", loaded: (k) => `${k} answer${k > 1 ? "s" : ""} loaded`, detail: "Detail by statement", low: "weakest point", pick: "Or open one of your barometers:", codesN: (k) => `${k} answer${k > 1 ? "s" : ""}`,
-      analyse: "Analyse", clear: "Clear all", cleared: "Data cleared",
-      csv: "Or import a file", csvHint: "Microsoft Forms or Google Forms export: a TEAM column and one column per question, from A1 to R3, with ratings from 1 to 5.",
-      csvBtn: "Import a CSV", tpl: "Download the template", demoL: "No answers yet?", demo: "Load an example",
-      ok: (k) => `${k} valid answer${k > 1 ? "s" : ""}`, bad: (k) => `${k} unreadable code${k > 1 ? "s" : ""}`,
-      dup: (k) => `${k} duplicate${k > 1 ? "s" : ""} ignored`, other: (k) => `${k} code${k > 1 ? "s" : ""} from another barometer`,
-      csvBad: "The file does not have the right columns. Download the template to see the expected format.",
-      csvRows: (k) => `${k} row${k > 1 ? "s" : ""} imported`, csvErr: (k) => `${k} incomplete row${k > 1 ? "s" : ""}`,
-      mixed: "The codes come from several barometers. Open the dashboard from your barometer's link to sort them.",
-      empty: "Paste codes or load the example to see each team's ADKAR profile.",
-      summary: (n, teams, blocked, idx) => `<strong>${n}</strong> answers from <strong>${teams}</strong> team${teams > 1 ? "s" : ""}. Overall adoption index: <strong>${idx}/100</strong>. ${blocked ? `<strong>${blocked}</strong> team${blocked > 1 ? "s have" : " has"} a barrier point.` : "No team has a barrier point."}`,
-      all: "All teams", team: "Team", resist: "Resistance", index: "Index", resp: (k) => `${k} answer${k > 1 ? "s" : ""}`,
-      adoption: "adoption index", stopLabel: "Barrier", watchLabel: "Watch point",
-      verdictB: (s) => `The team gets stuck at the ${s} stage. Until this is resolved, the next stages will make little progress.`,
-      verdictW: (s) => `No clear barrier, but the ${s} stage is fragile.`,
-      verdictOk: "Every stage is acquired. What remains is to make the change last.",
-      actions: "Recommended actions", resistance: "Resistance", barrierAt: "Stage to address", noneB: "None",
-      waiting: (k) => `Waiting for answers (fewer than ${k}, hidden to protect anonymity)`,
-      csvOut: "Export as CSV", printOut: "Export as PDF", printDate: (d) => `Report generated on ${d}`,
-      mTitle: "How the results are calculated",
-      mBody: [
-        "Each stage of the model (Awareness, Desire, Knowledge, Ability, Reinforcement) is measured by 3 statements rated from 1 to 5. A stage's score is the average of its answers.",
-        "Below 3, the stage is a barrier. Between 3 and 4, it needs watching. From 4, it is acquired.",
-        "The stages are sequential: the barrier point is the first barrier stage. If there is none, it is the first stage to watch.",
-        "Resistance combines desire (two thirds) and awareness (one third): high below 3, moderate below 3.8.",
-        "The adoption index puts the average of the 5 stages on a 100 scale. A team only appears from 3 answers.",
-      ],
-    },
-    ja: {
-      kicker: "ダッシュボード", demoTeams: ["経理", "購買", "サプライチェーン", "カスタマーサービス", "IT"], noSurvey: "バロメーターの結果", demoName: "サンプル：新ERPの導入",
-      codes: "回答コード", codesHint: "受け取ったコードやメール本文を貼り付けると、コードを自動で読み取って分析します。データはこのブラウザに保存されます。", expand: "回答を追加・編集", loaded: (k) => `回答${k}件を読み込み済み`, detail: "設問ごとの詳細", low: "最も低い項目", pick: "または保存済みのバロメーターを開く：", codesN: (k) => `回答${k}件`,
-      analyse: "分析する", clear: "すべて消去", cleared: "データを消去しました",
-      csv: "またはファイルを取り込む", csvHint: "Microsoft FormsまたはGoogle Formsのエクスポート：TEAM列と、A1からR3までの設問ごとの列（1〜5の評価）。",
-      csvBtn: "CSVを取り込む", tpl: "テンプレートをダウンロード", demoL: "まだ回答がない場合", demo: "サンプルを読み込む",
-      ok: (k) => `有効な回答 ${k}件`, bad: (k) => `読み取れないコード ${k}件`,
-      dup: (k) => `重複 ${k}件（除外）`, other: (k) => `別のバロメーターのコード ${k}件`,
-      csvBad: "ファイルの列が正しくありません。テンプレートで形式を確認してください。",
-      csvRows: (k) => `${k}行を取り込みました`, csvErr: (k) => `不完全な行 ${k}件`,
-      mixed: "複数のバロメーターのコードが含まれています。該当するバロメーターのリンクからダッシュボードを開いてください。",
-      empty: "コードを貼り付けるかサンプルを読み込むと、チームごとのADKARプロファイルが表示されます。",
-      summary: (n, teams, blocked, idx) => `<strong>${teams}</strong>チームから<strong>${n}</strong>件の回答。全体の定着度指数：<strong>${idx}/100</strong>。${blocked ? `障壁のあるチーム：<strong>${blocked}</strong>。` : "障壁のあるチームはありません。"}`,
-      all: "全チーム", team: "チーム", resist: "抵抗", index: "指数", resp: (k) => `回答${k}件`,
-      adoption: "定着度指数", stopLabel: "障壁", watchLabel: "要注意",
-      verdictB: (s) => `このチームは「${s}」の段階でつまずいています。ここが解消されるまで、次の段階はあまり進みません。`,
-      verdictW: (s) => `明確な障壁はありませんが、「${s}」の段階が不安定です。`,
-      verdictOk: "すべての段階が定着しています。あとは変化を長く根付かせることです。",
-      actions: "推奨される施策", resistance: "抵抗", barrierAt: "取り組むべき段階", noneB: "なし",
-      waiting: (k) => `回答待ち（${k}件未満のため、匿名性保護の観点から非表示）`,
-      csvOut: "CSVで出力", printOut: "PDFで出力", printDate: (d) => `レポート作成日：${d}`,
-      mTitle: "結果の算出方法",
-      mBody: [
-        "モデルの各段階（認知、意欲、知識、能力、定着）を、1〜5で評価する3つの設問で測定します。各段階のスコアは回答の平均です。",
-        "3未満は障壁、3以上4未満は要注意、4以上は定着済みです。",
-        "段階は順番に進みます。障壁ポイントは最初の「障壁」の段階で、なければ最初の「要注意」の段階です。",
-        "抵抗は意欲（3分の2）と認知（3分の1）を組み合わせたもので、3未満で高い、3.8未満で中程度です。",
-        "定着度指数は5段階の平均を100点満点に換算したものです。チームは回答が3件以上で表示されます。",
-      ],
-    },
-  };
-
-  const $ = (id) => document.getElementById(id);
-  const ctx = Page.surveyFromHash();
-  const survey = ctx && ctx.survey;
-  const isDemo = /demo/.test(location.hash);
-  const storeKey = survey ? "cb-codes-" + survey.id : null;
-  let data = null;       // { responses: [{team, answers}], report: {...} }
-  let csvRows = [];      // rows imported from a CSV file
-  let csvReport = null;
-
-  // ---------- Demo data (deterministic) ----------
-  function demoResponses() {
-    let seed = 7;
-    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
-    const profiles = [
-      [0, 9, { A: 3.9, D: 2.5, K: 3.0, B: 2.8, R: 2.6 }],
-      [1, 7, { A: 2.6, D: 2.9, K: 2.5, B: 2.7, R: 2.4 }],
-      [2, 11, { A: 4.4, D: 4.2, K: 3.3, B: 3.1, R: 3.4 }],
-      [3, 8, { A: 4.6, D: 4.4, K: 4.3, B: 4.1, R: 4.0 }],
-      [4, 2, { A: 4, D: 4, K: 4, B: 4, R: 4 }],
-    ];
-    const out = [];
-    profiles.forEach(([name, n, p]) => {
-      for (let i = 0; i < n; i++) {
-        const answers = {};
-        CB.QUESTIONS.forEach((q) => {
-          const v = Math.round(p[q.stage] + (rnd() - 0.5) * 2.2);
-          answers[q.id] = Math.min(5, Math.max(1, v));
-        });
-        out.push({ team: "@demo:" + name, answers });
-      }
-    });
-    return out;
-  }
-
-  // ---------- Reading codes ----------
-  function readCodes(text) {
-    const found = String(text).toUpperCase().match(/CB1-[0-9A-Z]{4}-[0-9A-Z]{1,2}-[0-9A-Z]{16}/g) || [];
-    const loose = String(text).split(/\s+/).filter((w) => /^CB1-/i.test(w)).length;
-    const seen = new Set(), responses = [], ids = new Set();
-    let bad = Math.max(0, loose - found.length), dup = 0, other = 0;
-    for (const c of found) {
-      if (seen.has(c)) { dup++; continue; }
-      seen.add(c);
-      const r = CB.decodeResponse(c);
-      if (!r) { bad++; continue; }
-      if (survey && r.surveyId !== survey.id) { other++; continue; }
-      ids.add(r.surveyId);
-      const name = survey && survey.teams[r.team] !== undefined ? survey.teams[r.team] : null;
-      responses.push({ team: name || `#${r.team + 1}`, teamIdx: r.team, answers: r.answers });
-    }
-    return { responses, bad, dup, other, mixed: !survey && ids.size > 1 };
-  }
-
-  function build() {
-    const text = $("codes").value;
-    const r = readCodes(text);
-    const responses = r.responses.concat(csvRows.map((x) => ({ team: x.teamName, answers: x.answers })));
-    data = responses.length || text.trim() || csvReport ? { responses, report: r } : null;
-    if (storeKey) { try { localStorage.setItem(storeKey, text); } catch (e) { /* ignore */ } }
-  }
-
-  // ---------- Rendering ----------
-  function lineHtml(a, lang, t) {
-    return `<div class="line">${CB.STAGES.map((s) => {
-      const st = a.status[s], stop = a.barrier && a.barrier.stage === s;
-      return `<div class="station${stop ? " stop" : ""}${stop && a.barrier.kind === "watch" ? " watchpt" : ""}" data-s="${st}">
-        <span class="dot">${s === "B" ? "A" : s}</span>
-        <span class="name">${CB.esc(CB.STAGE_NAMES[lang][s])}</span>
-        <span class="score">${a.scores[s] === null ? "" : a.scores[s].toFixed(1)}</span>
-        ${stop ? `<span class="stop-label">${CB.esc(a.barrier.kind === "watch" ? t.watchLabel : t.stopLabel)}</span>` : ""}
-      </div>`;
-    }).join("")}</div>`;
-  }
-
-  const label = (name) => name.startsWith("@demo:") ? T[Page.lang].demoTeams[Number(name.slice(6))] : name;
-
-  function groups() {
-    const map = new Map();
-    if (survey) survey.teams.forEach((name) => map.set(name, []));
-    data.responses.forEach((r) => { if (!map.has(r.team)) map.set(r.team, []); map.get(r.team).push(r); });
-    return [...map.entries()].map(([name, rs]) => ({ name: label(name), rs, a: CB.analyse(rs) }));
-  }
-
-  function renderReport(t) {
-    const out = [];
-    if (data) {
-      const r = data.report;
-      out.push(`<span class="pill pill-ok">${CB.esc(t.ok(data.responses.length))}</span>`);
-      if (r.bad) out.push(`<span class="pill pill-barrier">${CB.esc(t.bad(r.bad))}</span>`);
-      if (r.dup) out.push(`<span class="pill pill-watch">${CB.esc(t.dup(r.dup))}</span>`);
-      if (r.other) out.push(`<span class="pill pill-barrier">${CB.esc(t.other(r.other))}</span>`);
-      if (r.mixed) out.push(`<div class="notice" style="width:100%">${CB.esc(t.mixed)}</div>`);
-    }
-    if (csvReport) {
-      if (csvReport.badHeader) out.push(`<div class="error" style="width:100%">${CB.esc(t.csvBad)}</div>`);
-      else {
-        out.push(`<span class="pill pill-ok">${CB.esc(t.csvRows(csvReport.rows))}</span>`);
-        if (csvReport.errors) out.push(`<span class="pill pill-watch">${CB.esc(t.csvErr(csvReport.errors))}</span>`);
-      }
-    }
-    $("report").innerHTML = out.join("");
-  }
-
-  function savedHtml(t) {
-    if (survey || isDemo) return "";
-    let list = [];
-    try { list = JSON.parse(localStorage.getItem("cb-surveys-v1")) || []; } catch (e) { /* ignore */ }
-    if (!list.length) return "";
-    const count = (id) => { try { return ((localStorage.getItem("cb-codes-" + id) || "").match(/CB1-/gi) || []).length; } catch (e) { return 0; } };
-    return `<p style="margin-top:28px">${CB.esc(t.pick)}</p><ul class="saved-list">${list.map((x) => `<li><a href="dashboard.html#s=${CB.esc(x.token)}">${CB.esc(x.name)}<span>${CB.esc(t.codesN(count(x.id)))}</span></a></li>`).join("")}</ul>`;
-  }
-
-  function questionDetail(rs, lang, t) {
-    const avg = CB.QUESTIONS.map((q) => ({ q, v: rs.reduce((a, r) => a + r.answers[q.id], 0) / rs.length }));
-    const cut = avg.map((x) => Math.round(x.v * 10) / 10).sort((a, b) => a - b)[2];
-    const lowest = avg.filter((x) => Math.round(x.v * 10) / 10 <= cut && x.v < CB.THRESHOLDS.ok).map((x) => x.q.id);
-    const color = (v) => v < CB.THRESHOLDS.barrier ? "var(--barrier)" : v < CB.THRESHOLDS.ok ? "var(--watch)" : "var(--ok)";
-    const rowHtml = ({ q, v }) => `<li class="qrow${lowest.includes(q.id) ? " low" : ""}"${lowest.includes(q.id) ? ` title="${CB.esc(t.low)}"` : ""}>
-        <span>${CB.esc(q[lang])}</span>
-        <span class="bar"><i style="width:${(v - 1) / 4 * 100}%;background:${color(v)}"></i></span><b>${v.toFixed(1)}</b></li>`;
-    return `<details class="detail no-print"><summary>${CB.esc(t.detail)}</summary>${CB.STAGES.map((st) => `
-      <p class="qstage">${CB.esc(CB.STAGE_NAMES[lang][st])}</p>
-      <ul class="qrows">${avg.filter((x) => x.q.stage === st).map(rowHtml).join("")}</ul>`).join("")}</details>`;
-  }
-
-  function render(lang) {
-    const t = T[lang];
-    const set = (id, v) => { $(id).textContent = v; };
-    set("kicker", t.kicker + (survey ? ` | code ${survey.id}` : ""));
-    set("title", survey ? survey.name : isDemo ? t.demoName : t.noSurvey);
-    set("codesLabel", t.codes); set("codesHint", t.codesHint); set("expand", t.expand); set("clear", t.clear);
-    set("csvLabel", t.csv); set("csvHint", t.csvHint); set("csvBtn", t.csvBtn); set("tpl", t.tpl);
-    set("demoLabel", t.demoL); set("demo", t.demo); set("csvOut", t.csvOut); set("printOut", t.printOut);
-    set("mTitle", t.mTitle);
-    $("mBody").innerHTML = t.mBody.map((p) => `<p>${CB.esc(p)}</p>`).join("");
-    $("printDate").textContent = t.printDate(new Date().toLocaleDateString(lang === "ja" ? "ja-JP" : lang === "fr" ? "fr-FR" : "en-GB"));
-    renderReport(t);
-    $("loaded").textContent = data ? t.loaded(data.responses.length) : "";
-
-    const res = $("results");
-    if (!data || !data.responses.length) {
-      $("exports").hidden = true;
-      res.innerHTML = `<div class="empty-state"><div class="line">${CB.STAGES.map((s) => `<div class="station"><span class="dot">${s === "B" ? "A" : s}</span><span class="name">${CB.esc(CB.STAGE_NAMES[lang][s])}</span></div>`).join("")}</div><p>${CB.esc(t.empty)}</p>${savedHtml(t)}</div>`;
-      return;
-    }
-    $("exports").hidden = false;
-    const gs = groups();
-    const shown = gs.filter((g) => g.a.enough);
-    const waiting = gs.filter((g) => !g.a.enough);
-    const shownResponses = shown.flatMap((g) => g.rs);
-    const all = CB.analyse(shownResponses);
-    const lv = CB.UI[lang].levels, rz = CB.UI[lang].resist;
-
-    const row = (label, sub, a, cls, anchor) => `<tr class="${cls || ""}"><th scope="row">${anchor ? `<a href="#" data-goto="${anchor}">${CB.esc(label)}</a>` : CB.esc(label)}<span class="n">${CB.esc(sub)}</span></th>
-      ${CB.STAGES.map((s) => { const st = a.status[s]; const first = a.barrier && a.barrier.stage === s;
-        return `<td><span class="cell ${st}${first ? " first" : ""}" title="${CB.esc(lv[st])}">${a.scores[s] === null ? "" : a.scores[s].toFixed(1)}</span></td>`; }).join("")}
-      <td>${a.resistance ? `<span class="pill pill-${a.resistance === "high" ? "barrier" : a.resistance === "moderate" ? "watch" : "ok"}">${CB.esc(rz[a.resistance])}</span>` : ""}</td>
-      <td><strong>${a.index === null ? "" : a.index}</strong></td></tr>`;
-
-    const blocked = shown.filter((g) => g.a.barrier && g.a.barrier.kind === "barrier").length;
-    let html = "";
-    if (shown.length) {
-      html += `<p class="summary">${t.summary(shownResponses.length, shown.length, blocked, all.index)}</p>
-      <div class="legend">${["ok", "watch", "barrier"].map((k) => `<span class="pill pill-${k}">${CB.esc(lv[k])}</span>`).join("")}</div>
-      <div class="heat-wrap"><table class="heat"><thead><tr><th></th>
-        ${CB.STAGES.map((s) => `<th scope="col">${CB.esc(CB.STAGE_NAMES[lang][s])}</th>`).join("")}
-        <th scope="col">${CB.esc(t.resist)}</th><th scope="col">${CB.esc(t.index)}</th></tr></thead><tbody>
-        ${shown.length > 1 ? row(t.all, t.resp(all.n), all, "all") : ""}
-        ${shown.map((g) => row(g.name, t.resp(g.a.n), g.a, "", "team-" + gs.indexOf(g))).join("")}
-      </tbody></table></div>`;
-
-      // Teams sorted: barrier first, then watch, then fine; within, lowest index first
-      const rank = (g) => (g.a.barrier ? (g.a.barrier.kind === "barrier" ? 0 : 1) : 2) * 1000 + g.a.index;
-      html += `<div class="teams">${shown.slice().sort((x, y) => rank(x) - rank(y)).map((g) => {
-        const a = g.a, bp = a.barrier, stName = bp ? CB.STAGE_NAMES[lang][bp.stage] : null;
-        const verdict = !bp ? t.verdictOk : bp.kind === "barrier" ? t.verdictB(stName) : t.verdictW(stName);
-        const acts = CB.ACTIONS[bp ? bp.stage : "R"][lang];
-        return `<article class="team" id="team-${gs.indexOf(g)}">
-          <div class="team-head"><div><h3>${CB.esc(g.name)}</h3><span class="note">${CB.esc(t.resp(a.n))}</span></div>
-            <div class="idx"><b>${a.index}</b><span class="note">${CB.esc(t.adoption)}</span></div></div>
-          ${lineHtml(a, lang, t)}
-          <div class="facts">
-            <div><span>${CB.esc(t.barrierAt)}${CB.esc(CB.UI[lang].sep)}</span><strong>${CB.esc(stName || t.noneB)}</strong></div>
-            <div><span>${CB.esc(t.resistance)}${CB.esc(CB.UI[lang].sep)}</span><strong>${CB.esc(rz[a.resistance])}</strong></div>
-          </div>
-          <p class="verdict">${CB.esc(verdict)}</p>
-          <h4 class="label" style="margin:0 0 8px">${CB.esc(t.actions)}</h4>
-          <ul class="todo">${acts.map((x) => `<li>${CB.esc(x)}</li>`).join("")}</ul>
-          ${questionDetail(g.rs, lang, t)}
-        </article>`;
-      }).join("")}</div>`;
-    }
-    if (waiting.length) {
-      html += `<h3 style="margin:32px 0 0;font-size:17px">${CB.esc(t.waiting(CB.MIN_RESPONSES))}</h3>
-        <ul class="waiting">${waiting.map((g) => `<li>${CB.esc(g.name)} (${g.a.n}/${CB.MIN_RESPONSES})</li>`).join("")}</ul>`;
-    }
-    res.innerHTML = html;
-  }
-
-  // ---------- Exports ----------
-  function exportCsv() {
-    const lang = Page.lang, t = T[lang];
-    const head = ["team", "responses", ...CB.STAGES.map((s) => CB.STAGE_NAMES.en[s].toLowerCase()), "barrier_stage", "barrier_kind", "resistance", "adoption_index"];
-    const lines = [head.join(";")];
-    groups().filter((g) => g.a.enough).forEach((g) => {
-      const a = g.a;
-      lines.push([`"${g.name.replace(/"/g, '""')}"`, a.n, ...CB.STAGES.map((s) => String(a.scores[s]).replace(".", lang === "fr" ? "," : ".")),
-        a.barrier ? CB.STAGE_NAMES.en[a.barrier.stage] : "", a.barrier ? a.barrier.kind : "", a.resistance || "", a.index].join(";"));
-    });
-    const name = (survey ? survey.name : isDemo ? "example" : "barometer").replace(/[^\wÀ-ɏ぀-ヿ一-鿿-]+/g, "_");
-    Page.download(`${name}_adkar.csv`, lines.join("\r\n"));
-  }
-
-  // ---------- Events ----------
-  let timer;
-  $("codes").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => { build(); render(Page.lang); }, 350); });
-  $("codes").addEventListener("paste", () => setTimeout(() => { build(); render(Page.lang); if (data && data.responses.length) $("report").scrollIntoView({ block: "nearest" }); }, 0));
-  $("expand").addEventListener("click", () => { $("inputPanel").classList.remove("collapsed"); $("codes").focus(); });
-  $("clear").addEventListener("click", () => {
-    $("codes").value = ""; csvRows = []; csvReport = null; $("csvFile").value = ""; build(); data = null; render(Page.lang); Page.toast(T[Page.lang].cleared);
-  });
-  $("csvFile").addEventListener("change", async (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    const parsed = CB.parseCsv(await f.text());
-    csvRows = parsed.rows;
-    csvReport = { rows: parsed.rows.length, errors: parsed.errors, badHeader: !!parsed.badHeader };
-    build(); render(Page.lang);
-  });
-  $("tpl").addEventListener("click", () => Page.download("change-barometer-template.csv", CB.csvTemplate()));
-  $("demo").addEventListener("click", () => { if (!/demo/.test(location.hash)) { location.hash = "demo"; location.reload(); } });
-  $("csvOut").addEventListener("click", exportCsv);
-  $("printOut").addEventListener("click", () => window.print());
-  window.addEventListener("hashchange", () => location.reload());
-  $("results").addEventListener("click", (e) => {
-    const a = e.target.closest("[data-goto]");
-    if (!a) return;
-    e.preventDefault();
-    const card = $(a.dataset.goto);
-    card.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-    card.classList.add("flash"); setTimeout(() => card.classList.remove("flash"), 1600);
-  });
-
-  // ---------- Start ----------
-  if (isDemo && !survey) {
-    data = { responses: demoResponses(), report: { bad: 0, dup: 0, other: 0 } };
-    $("inputPanel").classList.add("collapsed");
-  } else if (storeKey) {
-    try { const saved = localStorage.getItem(storeKey); if (saved) { $("codes").value = saved; build(); if (data && data.responses.length) $("inputPanel").classList.add("collapsed"); } } catch (e) { /* ignore */ }
-  }
-  Page.start(render);
-})();
-</script>
+<script src="assets/qr.js"></script>
+<script src="assets/dashboard.js"></script>
 </body>
 </html>

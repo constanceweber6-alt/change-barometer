@@ -17,8 +17,8 @@ This barometer gives a quick, structured answer, based on the ADKAR model of ind
 
 ## How it works
 
-1. **Create a barometer.** Enter the project name and the list of teams. You get a survey link and a dashboard link, plus a ready to send email.
-2. **Send the survey.** Each person picks their team and rates 15 statements (3 per stage) from 1 to 5. It takes about 3 minutes. At the end, they get an anonymous response code to send back.
+1. **Create a barometer.** Enter the project name and the list of teams, with their headcount if you know it (`Finance ; 12`). You get a survey link, a dashboard link, a QR code and a ready to send email.
+2. **Send the survey.** By email, or with a printable A4 poster carrying the QR code for frontline teams without email (warehouses, hotels, stores). Each person picks their team and rates 15 statements (3 per stage) from 1 to 5. It takes about 3 minutes. At the end, they get an anonymous response code to send back.
 3. **Read the dashboard.** Paste the codes you received (or a whole email, codes are picked out automatically). You can also import a Microsoft Forms or Google Forms export as CSV.
 
 For each team, the dashboard shows:
@@ -29,7 +29,14 @@ For each team, the dashboard shows:
 * an **adoption index** out of 100
 * **recommended actions** for the stage to address
 
-Results can be exported as PDF (for a steering committee) or CSV.
+It also includes:
+
+* **Response tracking**: "7 answers out of 12" for each team, so you know where to send a reminder.
+* **Action plan**: tick the recommended actions to keep, add your own, set an owner and a due date, then export the plan as CSV or print it.
+* **Presentation mode**: a full screen view for a steering committee, with an overview, one screen per team and the action plan. Arrow keys to move, Esc to exit.
+* **Detail by statement**: the 15 statements for each team, with the weakest points highlighted.
+
+Results can be exported as PDF or CSV.
 
 ## Anonymity and data
 
@@ -37,6 +44,7 @@ Results can be exported as PDF (for a steering committee) or CSV.
 * A response code only holds the barometer reference, the team and the 15 ratings. No name, no email.
 * A team's results only appear once it has at least 3 answers.
 * Duplicated codes are ignored, and codes from another barometer are flagged.
+* Headcounts and the action plan stay in the consultant's browser. To move to another computer, download a backup file from the dashboard and restore it there. Nothing is hosted.
 
 ## Scoring rules
 
@@ -59,10 +67,13 @@ If you prefer to collect answers in your usual survey tool, download the CSV tem
 | --- | --- |
 | `index.html` | Home page and barometer creation |
 | `survey.html` | The survey for team members |
-| `dashboard.html` | Results, heatmap, team profiles and exports |
+| `dashboard.html` | Results, response tracking, team profiles, action plan, presentation |
+| `poster.html` | Printable A4 poster with the survey QR code |
 | `assets/core.js` | Questions, translations, scoring and code format |
 | `assets/page.js` | Shared navigation and language switch |
-| `tests/core.test.js` | Checks on the scoring and the response codes (`node --test`) |
+| `assets/dashboard.js` | Dashboard logic |
+| `assets/qr.js` | QR code generator written for this project, no external library |
+| `tests/core.test.js` | Checks on the scoring and the response codes (`node --test tests/core.test.js`) |
 
 ## About
 

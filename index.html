@@ -32,6 +32,8 @@
   .saved li { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; }
   .saved .meta { font-size: 14px; color: var(--muted); }
   .empty { color: var(--muted); font-size: 15px; }
+  .qr-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: center; margin: 4px 0 20px; padding: 14px; background: var(--paper); border-radius: var(--r-md); }
+  .qr-box svg { width: 100%; height: auto; display: block; border-radius: 6px; }
   @media (max-width: 860px) {
     .hero-grid, .create-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
     .steps { grid-template-columns: minmax(0, 1fr); }
@@ -91,6 +93,11 @@
           <div class="row"><input class="input" id="dashLink" readonly><button class="btn btn-secondary btn-sm" type="button" data-copy="dashLink" id="copy2"></button></div>
           <span class="note" id="dashHint"></span>
         </div>
+        <div class="qr-row">
+          <div class="qr-box" id="qrBox" aria-hidden="true"></div>
+          <div><span class="label" id="qrLabel"></span><p class="note" id="qrHint" style="margin:4px 0 10px"></p>
+            <div class="actions-row"><button class="btn btn-secondary btn-sm" type="button" id="qrPng"></button><a class="btn btn-secondary btn-sm" id="posterLink" href="#" target="_blank" rel="noopener"></a></div></div>
+        </div>
         <span class="label" id="mailLabel"></span>
         <pre class="mail" id="mail"></pre>
         <div class="actions-row">
@@ -111,6 +118,7 @@
 
 <script src="assets/core.js"></script>
 <script src="assets/page.js"></script>
+<script src="assets/qr.js"></script>
 <script>
 (function () {
   const T = {
@@ -131,8 +139,8 @@
       ],
       formTitle: "Nouveau baromètre", formSub: "Tout se fait dans votre navigateur.",
       name: "Nom du projet de transformation", namePh: "Ex. Déploiement du nouvel ERP",
-      teams: "Équipes (une par ligne)", teamsPh: "Finance\nAchats\nService client",
-      teamsHint: "Entre 1 et 60 équipes. Les résultats d'une équipe s'affichent à partir de 3 réponses.",
+      teams: "Équipes (une par ligne)", teamsPh: "Finance ; 12\nAchats ; 8\nService client",
+      teamsHint: "Entre 1 et 60 équipes. Si vous connaissez l'effectif, ajoutez-le après un point-virgule (Finance ; 12) pour suivre le taux de réponse. Les résultats d'une équipe s'affichent à partir de 3 réponses.", qrLabel: "QR code du sondage", qrHint: "Pour les équipes sans mail : à afficher en réunion ou sur une affiche.", qrPng: "Télécharger le QR code", poster: "Imprimer une affiche",
       submit: "Générer les liens",
       errName: "Indiquez le nom du projet.", errTeams: "Ajoutez au moins une équipe.", errMany: "60 équipes au maximum.",
       resTitle: "Votre baromètre est prêt", resSub: "Gardez le lien du tableau de bord pour vous. Le baromètre est aussi enregistré dans ce navigateur.",
@@ -160,8 +168,8 @@
       ],
       formTitle: "New barometer", formSub: "Everything happens in your browser.",
       name: "Name of the transformation project", namePh: "e.g. New ERP rollout",
-      teams: "Teams (one per line)", teamsPh: "Finance\nProcurement\nCustomer service",
-      teamsHint: "Between 1 and 60 teams. A team's results appear from 3 answers.",
+      teams: "Teams (one per line)", teamsPh: "Finance ; 12\nProcurement ; 8\nCustomer service",
+      teamsHint: "Between 1 and 60 teams. If you know the headcount, add it after a semicolon (Finance ; 12) to follow the response rate. A team's results appear from 3 answers.", qrLabel: "Survey QR code", qrHint: "For teams without email: show it in a meeting or on a poster.", qrPng: "Download the QR code", poster: "Print a poster",
       submit: "Generate the links",
       errName: "Enter the project name.", errTeams: "Add at least one team.", errMany: "60 teams at most.",
       resTitle: "Your barometer is ready", resSub: "Keep the dashboard link for yourself. The barometer is also saved in this browser.",
@@ -189,8 +197,8 @@
       ],
       formTitle: "新しいバロメーター", formSub: "すべてブラウザ内で完結します。",
       name: "変革プロジェクト名", namePh: "例：新ERPの導入",
-      teams: "チーム（1行に1つ）", teamsPh: "経理\n購買\nカスタマーサービス",
-      teamsHint: "1〜60チーム。各チームの結果は回答が3件以上集まると表示されます。",
+      teams: "チーム（1行に1つ）", teamsPh: "経理 ; 12\n購買 ; 8\nカスタマーサービス",
+      teamsHint: "1〜60チーム。人数がわかる場合はセミコロンの後に入力すると（経理 ; 12）回答率を確認できます。各チームの結果は回答が3件以上集まると表示されます。", qrLabel: "アンケートのQRコード", qrHint: "メールを使わないチーム向け：会議やポスターで表示してください。", qrPng: "QRコードをダウンロード", poster: "ポスターを印刷",
       submit: "リンクを発行",
       errName: "プロジェクト名を入力してください。", errTeams: "チームを1つ以上追加してください。", errMany: "チームは60までです。",
       resTitle: "バロメーターの準備ができました", resSub: "ダッシュボード用リンクはご自身で保管してください。このブラウザにも保存されています。",
@@ -247,7 +255,8 @@
     if (!current) return;
     const s = urlFor("survey.html", current.token);
     const d = urlFor("dashboard.html", current.token);
-    $("surveyLink").value = s; $("dashLink").value = d; $("openDash").href = d; $("testSurvey").href = s;
+    $("surveyLink").value = s; $("dashLink").value = d; $("openDash").href = d; $("testSurvey").href = s; $("posterLink").href = "poster.html#s=" + current.token;
+    if ($("qrBox").dataset.url !== s) { current.qr = QR.encode(s, "M"); $("qrBox").innerHTML = QR.toSvg(current.qr, 2); $("qrBox").dataset.url = s; }
     $("mail").textContent = t.mailText(current.name, s);
     $("result").hidden = false;
   }
@@ -265,7 +274,7 @@
     $("name").placeholder = t.namePh; $("teams").placeholder = t.teamsPh; set("teamsHint", t.teamsHint); set("submit", t.submit);
     set("resTitle", t.resTitle); set("resSub", t.resSub); set("surveyLabel", t.surveyLink); set("dashLabel", t.dashLink);
     set("dashHint", t.dashHint); set("mailLabel", t.mail); set("copy1", t.copy); set("copy2", t.copy);
-    set("copyMail", t.copyMail); set("openDash", t.openDash); set("testSurvey", t.test); set("savedTitle", t.saved);
+    set("copyMail", t.copyMail); set("qrLabel", t.qrLabel); set("qrHint", t.qrHint); set("qrPng", t.qrPng); set("posterLink", t.poster); set("openDash", t.openDash); set("testSurvey", t.test); set("savedTitle", t.saved);
     if (!$("formError").hidden && $("formError").dataset.key) set("formError", t[$("formError").dataset.key]);
     renderResult(t);
     renderSaved(t);
@@ -275,7 +284,14 @@
     e.preventDefault();
     const t = T[Page.lang];
     const name = $("name").value.trim();
-    const teams = [...new Set($("teams").value.split(/\r?\n/).map((x) => x.trim()).filter(Boolean))];
+    const sizes = {};
+    const teams = [...new Set($("teams").value.split(/\r?\n/).map((x) => {
+      const m = x.trim().match(/^(.*?)\s*[;\t]\s*(\d{1,5})\s*$/);
+      if (!m) return x.trim().replace(/\s*;\s*$/, "");
+      const name = m[1].trim().slice(0, 60);
+      if (name && Number(m[2]) > 0) sizes[name] = Number(m[2]);
+      return name;
+    }).filter(Boolean))];
     const err = !name ? "errName" : !teams.length ? "errTeams" : teams.length > 60 ? "errMany" : null;
     if (err) {
       $("formError").textContent = t[err]; $("formError").dataset.key = err; $("formError").hidden = false;
@@ -285,12 +301,19 @@
     $("formError").hidden = true;
     const survey = { id: CB.randomId(), name, teams: teams.map((x) => x.slice(0, 60)) };
     current = { ...survey, token: CB.encodeSurvey(survey) };
-    const list = load(); list.unshift(current); store(list);
+    const list = load(); list.unshift({ id: current.id, name: current.name, teams: current.teams, token: current.token }); store(list);
+    try { if (Object.keys(sizes).length) localStorage.setItem("cb-state-" + survey.id, JSON.stringify({ sizes, plan: {} })); } catch (e) { /* ignore */ }
     render(Page.lang);
     $("result").scrollIntoView({ block: "start" });
   });
 
   document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => Page.copy($(b.dataset.copy).value, T[Page.lang].copied)));
+  $("qrPng").addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.href = QR.toCanvas(current.qr, 12, 4).toDataURL("image/png");
+    a.download = current.name.replace(/[^\w\u00C0-\u024F\u3040-\u30FF\u4E00-\u9FFF-]+/g, "_") + "_qr.png";
+    document.body.appendChild(a); a.click(); a.remove();
+  });
   $("copyMail").addEventListener("click", () => Page.copy($("mail").textContent, T[Page.lang].copied));
 
   Page.start(render);

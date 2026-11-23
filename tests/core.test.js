@@ -85,3 +85,24 @@ test("CSV with a wrong header or a bad value is reported", () => {
   const bad = CB.csvTemplate().replace("Support;5", "Support;9");
   assert.strictEqual(CB.parseCsv(bad).errors, 1);
 });
+
+// ---------- QR code ----------
+const QR = require("../assets/qr.js");
+test("QR code: picks a version that fits and has the right size", () => {
+  const short = QR.encode("HELLO", "M");
+  assert.equal(short.version, 1);
+  assert.equal(short.size, 21);
+  const url = "https://constanceweber6-alt.github.io/change-barometer/survey.html#s=" + "x".repeat(300);
+  const big = QR.encode(url, "M");
+  assert.equal(big.size, big.version * 4 + 17);
+  assert.ok(big.version >= 10);
+});
+test("QR code: finder patterns are in the three corners", () => {
+  const q = QR.encode("change barometer", "M");
+  const n = q.size;
+  for (const [x, y] of [[0, 0], [n - 7, 0], [0, n - 7]]) {
+    assert.equal(q.modules[y][x], true);
+    assert.equal(q.modules[y + 1][x + 1], false);
+    assert.equal(q.modules[y + 3][x + 3], true);
+  }
+});

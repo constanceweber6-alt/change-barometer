@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change Barometer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23141B2D%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%277%27 fill=%27%23D9472B%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Schibsted+Grotesk:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  @page { size: A4; margin: 0; }
+  .tools { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin: 28px 0 20px; }
+  .tools .field { margin: 0; flex: 1; min-width: 240px; }
+  .sheet { width: min(210mm, 100%); aspect-ratio: 210 / 297; margin: 0 auto 40px; background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 7% 8%; display: grid; grid-template-rows: auto 1fr auto; }
+  .p-project { font-size: clamp(14px, 2.2vw, 20px); color: var(--muted); margin: 0 0 1.5em; font-weight: 600; }
+  .p-title { font-family: var(--display); font-size: clamp(30px, 6.4vw, 60px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 .35em; }
+  :lang(ja) .p-title { letter-spacing: 0; line-height: 1.3; font-size: clamp(26px, 5.4vw, 50px); }
+  .p-sub { font-size: clamp(16px, 2.8vw, 26px); color: var(--ink-2); margin: 0; }
+  .p-qr { display: grid; place-items: center; padding: 4% 0; }
+  .p-qr svg { width: min(62%, 120mm); height: auto; }
+  .p-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4%; border-top: 3px solid var(--ink); padding-top: 4%; }
+  .p-steps div { font-size: clamp(12px, 1.9vw, 17px); color: var(--ink-2); }
+  .p-steps b { display: block; font-family: var(--display); font-size: 1.8em; color: var(--ink); line-height: 1; margin-bottom: .3em; }
+  .p-contact { grid-column: 1 / -1; margin: 3% 0 0; font-size: clamp(12px, 1.9vw, 17px); }
+  @media print {
+    body { background: #fff; }
+    .sheet { width: 210mm; height: 297mm; border: 0; border-radius: 0; margin: 0; aspect-ratio: auto; padding: 18mm 18mm 16mm; }
+    main.wrap { padding: 0; max-width: none; }
+    .p-title { font-size: 54pt; } :lang(ja) .p-title { font-size: 44pt; }
+    .p-sub { font-size: 22pt; } .p-project { font-size: 16pt; } .p-steps div, .p-contact { font-size: 14pt; }
+    footer.site, .tools { display: none !important; }
+  }
+</style>
+</head>
+<body data-page="poster">
+<header id="nav" class="nav"></header>
+<main class="wrap">
+  <div id="missing" class="error" hidden style="margin-top:28px"></div>
+  <div class="tools no-print" id="tools">
+    <div class="field"><label for="contact" id="contactLabel"></label><input class="input" id="contact" maxlength="80"></div>
+    <button class="btn btn-primary" type="button" id="print"></button>
+  </div>
+  <section class="sheet" id="sheet">
+    <div>
+      <p class="p-project" id="project"></p>
+      <h1 class="p-title" id="title"></h1>
+      <p class="p-sub" id="sub"></p>
+    </div>
+    <div class="p-qr" id="qr"></div>
+    <div class="p-steps" id="steps"></div>
+  </section>
+</main>
+<footer id="footer" class="site"></footer>
+<script src="assets/core.js"></script>
+<script src="assets/page.js"></script>
+<script src="assets/qr.js"></script>
+<script>
+(function () {
+  const T = {
+    fr: {
+      title: "Comment vivez-vous ce changement ?", sub: "3 minutes, anonyme, depuis votre téléphone.",
+      steps: [["1", "Scannez le code avec l'appareil photo de votre téléphone."], ["2", "Choisissez votre équipe et répondez aux 15 affirmations."], ["3", "Renvoyez le code qui s'affiche à la fin."]],
+      contact: "Personne à qui renvoyer le code (facultatif)", contactPh: "Ex. Marie Dupont, marie.dupont@entreprise.com", sendTo: "Code à renvoyer à", print: "Imprimer l'affiche",
+      missing: "Ouvrez cette page depuis le tableau de bord de votre baromètre pour générer l'affiche.",
+    },
+    en: {
+      title: "How are you experiencing this change?", sub: "3 minutes, anonymous, from your phone.",
+      steps: [["1", "Scan the code with your phone's camera."], ["2", "Choose your team and rate the 15 statements."], ["3", "Send back the code shown at the end."]],
+      contact: "Person to send the code to (optional)", contactPh: "e.g. Mary Smith, mary.smith@company.com", sendTo: "Send your code to", print: "Print the poster",
+      missing: "Open this page from your barometer's dashboard to generate the poster.",
+    },
+    ja: {
+      title: "この変革をどう感じていますか？", sub: "スマートフォンで3分、匿名で回答できます。",
+      steps: [["1", "スマートフォンのカメラでコードを読み取ります。"], ["2", "チームを選び、15の設問に回答します。"], ["3", "最後に表示されるコードを返信します。"]],
+      contact: "コードの返信先（任意）", contactPh: "例：山田花子 hanako.yamada@company.co.jp", sendTo: "コードの返信先", print: "ポスターを印刷",
+      missing: "ポスターを作成するには、バロメーターのダッシュボードからこのページを開いてください。",
+    },
+  };
+  const $ = (id) => document.getElementById(id);
+  const ctx = Page.surveyFromHash();
+  const sv = ctx && ctx.survey;
+  const url = sv ? new URL("survey.html", location.href).href.split("#")[0] + "#s=" + ctx.token : "";
+  const qrSvg = sv ? QR.toSvg(QR.encode(url, "M"), 2) : "";
+  const key = sv ? "cb-poster-" + sv.id : null;
+  try { if (key) $("contact").value = localStorage.getItem(key) || ""; } catch (e) { /* ignore */ }
+
+  function render(lang) {
+    const t = T[lang];
+    $("missing").hidden = !!sv; $("tools").hidden = !sv; $("sheet").hidden = !sv;
+    $("missing").textContent = t.missing;
+    if (!sv) return;
+    $("contactLabel").textContent = t.contact; $("contact").placeholder = t.contactPh; $("print").textContent = t.print;
+    $("project").textContent = sv.name;
+    $("title").textContent = t.title; $("sub").textContent = t.sub;
+    $("qr").innerHTML = qrSvg;
+    const c = $("contact").value.trim();
+    $("steps").innerHTML = t.steps.map(([n, x]) => `<div><b>${n}</b>${CB.esc(x)}</div>`).join("") +
+      (c ? `<p class="p-contact"><strong>${CB.esc(t.sendTo)}${CB.esc(CB.UI[lang].sep)}</strong>${CB.esc(c)}</p>` : "");
+  }
+  $("contact").addEventListener("input", () => { try { localStorage.setItem(key, $("contact").value); } catch (e) { /* ignore */ } render(Page.lang); });
+  $("print").addEventListener("click", () => window.print());
+  Page.start(render);
+})();
+</script>
+</body>
+</html>
