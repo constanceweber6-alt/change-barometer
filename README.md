@@ -18,7 +18,7 @@ This barometer gives a quick, structured answer, based on the ADKAR model of ind
 ## How it works
 
 1. **Create a barometer.** Enter the project name and the list of teams, with their headcount if you know it (`Finance ; 12`). You get a survey link, a dashboard link, a QR code and a ready to send email.
-2. **Send the survey.** By email, or with a printable A4 poster carrying the QR code for frontline teams without email (warehouses, hotels, stores). Each person picks their team and rates 15 statements (3 per stage) from 1 to 5. It takes about 3 minutes. At the end, they get an anonymous response code to send back.
+2. **Send the survey.** By email, or with a printable A4 poster carrying the QR code for frontline teams without email (warehouses, hotels, stores). Each person picks their team and rates 15 statements (3 per stage) from 1 to 5. It takes about 3 minutes. At the end, they get a short anonymous response code to send back, such as `D99BD-0H4J4`.
 3. **Read the dashboard.** Paste the codes you received (or a whole email, codes are picked out automatically). You can also import a Microsoft Forms or Google Forms export as CSV.
 
 For each team, the dashboard shows:
@@ -41,7 +41,7 @@ Results can be exported as CSV, or as a two page PDF report: a synthesis first (
 ## Anonymity and data
 
 * Nothing is sent to a server. The survey, the codes and the analysis all run in the browser.
-* A response code only holds the barometer reference, the team and the 15 ratings. No name, no email.
+* A response code is 10 characters long and only holds the team and the 15 ratings, plus a check character tied to the barometer: a typo or a code from another barometer is refused. No name, no email. Letters that look like digits (I, L, O, U) are never used.
 * A team's results only appear once it has at least 3 answers.
 * Duplicated codes are ignored, and codes from another barometer are flagged.
 * Headcounts and the action plan stay in the consultant's browser. To move to another computer, download a backup file from the dashboard and restore it there. Nothing is hosted.

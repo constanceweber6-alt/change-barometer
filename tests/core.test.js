@@ -27,19 +27,53 @@ test("survey link round trip, with accents and Japanese", () => {
   assert.strictEqual(CB.decodeSurvey("not-a-token"), null);
 });
 
-test("response code round trip", () => {
+test("response code: 10 characters and round trip", () => {
   const answers = { A1: 4, A2: 5, A3: 3, D1: 3, D2: 4, D3: 2, K1: 1, K2: 1, K3: 5, B1: 5, B2: 2, B3: 3, R1: 4, R2: 4, R3: 1 };
   const code = CB.encodeResponse("K7Q2", 11, answers);
-  assert.match(code, /^CB1-K7Q2-B-453342115523441[0-9A-Z]$/);
-  const d = CB.decodeResponse(code.toLowerCase());
-  assert.deepStrictEqual(d, { surveyId: "K7Q2", team: 11, answers });
+  assert.match(code, /^[0-9A-HJKMNP-TV-Z]{5}-[0-9A-HJKMNP-TV-Z]{5}$/);
+  assert.deepStrictEqual(CB.decodeResponse(code.toLowerCase(), "K7Q2"), { surveyId: "K7Q2", team: 11, answers });
+  assert.deepStrictEqual(CB.decodeResponse(code.replace("-", " "), "K7Q2").answers, answers);
 });
 
-test("a typo in a response code is rejected", () => {
+test("every team and every answer survive the round trip", () => {
+  for (let team = 0; team < 60; team += 7) {
+    for (let v = 1; v <= 5; v++) {
+      const answers = all(v);
+      answers.R3 = 6 - v;
+      const d = CB.decodeResponse(CB.encodeResponse("A1B2", team, answers), "A1B2");
+      assert.strictEqual(d.team, team);
+      assert.deepStrictEqual(d.answers, answers);
+    }
+  }
+});
+
+test("a typo, or a code from another barometer, is rejected", () => {
   const code = CB.encodeResponse("K7Q2", 0, all(4));
-  const broken = code.slice(0, 12) + (code[12] === "4" ? "3" : "4") + code.slice(13);
-  assert.strictEqual(CB.decodeResponse(broken), null);
-  assert.strictEqual(CB.decodeResponse("hello"), null);
+  const C32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  let caught = 0, total = 0;
+  for (let pos = 0; pos < 11; pos++) {
+    if (pos === 5) continue;
+    const c = code[pos], other = C32[(C32.indexOf(c) + 1) % 32];
+    total++;
+    if (CB.decodeResponse(code.slice(0, pos) + other + code.slice(pos + 1), "K7Q2") === null) caught++;
+  }
+  assert.strictEqual(caught, total);
+  assert.strictEqual(CB.decodeResponse(code, "ZZZZ"), null);
+  assert.strictEqual(CB.decodeResponse("hello", "K7Q2"), null);
+});
+
+test("older long codes are still accepted", () => {
+  const d = CB.decodeResponse("CB1-WBSE-0-2223332222222226", "WBSE");
+  assert.strictEqual(d.team, 0);
+  assert.strictEqual(CB.decodeResponse("CB1-WBSE-0-2223332222222226", "XXXX"), null);
+});
+
+test("codes are found in a pasted email, words are ignored", () => {
+  const c1 = CB.encodeResponse("K7Q2", 1, all(3)), c2 = CB.encodeResponse("K7Q2", 2, all(5));
+  const found = CB.findCodes(`Bonjour, voici mon code : ${c1.toLowerCase()}\nEt aussi ${c2.replace("-", "")}. TRANSFERTS`);
+  const valid = found.filter((f) => CB.decodeResponse(f.code, "K7Q2")).map((f) => f.code);
+  assert.deepStrictEqual(valid, [c1, c2]);
+  assert.strictEqual(CB.countCodes(`${c1}\n${c1}\n${c2}`, "K7Q2"), 2);
 });
 
 test("incomplete answers cannot be encoded", () => {

@@ -7,7 +7,7 @@
       analyse: "Analyser", clear: "Tout effacer", cleared: "Données effacées",
       csv: "Ou importez un fichier", csvHint: "Export Microsoft Forms ou Google Forms : une colonne TEAM (ou EQUIPE) et une colonne par question, de A1 à R3, avec des notes de 1 à 5.",
       csvBtn: "Importer un CSV", tpl: "Télécharger le modèle", demoL: "Pas encore de réponses ?", demo: "Charger un exemple",
-      ok: (k) => `${k} réponse${k > 1 ? "s" : ""} valide${k > 1 ? "s" : ""}`, bad: (k) => `${k} code${k > 1 ? "s" : ""} illisible${k > 1 ? "s" : ""}`,
+      ok: (k) => `${k} réponse${k > 1 ? "s" : ""} valide${k > 1 ? "s" : ""}`, bad: (k) => `${k} code${k > 1 ? "s" : ""} illisible${k > 1 ? "s" : ""} ou d'un autre baromètre`, needLink: (k) => `${k} code${k > 1 ? "s" : ""} en attente : ouvrez le tableau de bord depuis le lien de votre baromètre pour les lire.`,
       dup: (k) => `${k} doublon${k > 1 ? "s" : ""} ignoré${k > 1 ? "s" : ""}`, other: (k) => `${k} code${k > 1 ? "s" : ""} d'un autre baromètre`,
       csvBad: "Le fichier n'a pas les bonnes colonnes. Téléchargez le modèle pour voir le format attendu.",
       csvRows: (k) => `${k} ligne${k > 1 ? "s" : ""} importée${k > 1 ? "s" : ""}`, csvErr: (k) => `${k} ligne${k > 1 ? "s" : ""} incomplète${k > 1 ? "s" : ""}`,
@@ -56,7 +56,7 @@
       analyse: "Analyse", clear: "Clear all", cleared: "Data cleared",
       csv: "Or import a file", csvHint: "Microsoft Forms or Google Forms export: a TEAM column and one column per question, from A1 to R3, with ratings from 1 to 5.",
       csvBtn: "Import a CSV", tpl: "Download the template", demoL: "No answers yet?", demo: "Load an example",
-      ok: (k) => `${k} valid answer${k > 1 ? "s" : ""}`, bad: (k) => `${k} unreadable code${k > 1 ? "s" : ""}`,
+      ok: (k) => `${k} valid answer${k > 1 ? "s" : ""}`, bad: (k) => `${k} code${k > 1 ? "s" : ""} unreadable or from another barometer`, needLink: (k) => `${k} code${k > 1 ? "s" : ""} waiting: open the dashboard from your barometer's link to read ${k > 1 ? "them" : "it"}.`,
       dup: (k) => `${k} duplicate${k > 1 ? "s" : ""} ignored`, other: (k) => `${k} code${k > 1 ? "s" : ""} from another barometer`,
       csvBad: "The file does not have the right columns. Download the template to see the expected format.",
       csvRows: (k) => `${k} row${k > 1 ? "s" : ""} imported`, csvErr: (k) => `${k} incomplete row${k > 1 ? "s" : ""}`,
@@ -105,7 +105,7 @@
       analyse: "分析する", clear: "すべて消去", cleared: "データを消去しました",
       csv: "またはファイルを取り込む", csvHint: "Microsoft FormsまたはGoogle Formsのエクスポート：TEAM列と、A1からR3までの設問ごとの列（1〜5の評価）。",
       csvBtn: "CSVを取り込む", tpl: "テンプレートをダウンロード", demoL: "まだ回答がない場合", demo: "サンプルを読み込む",
-      ok: (k) => `有効な回答 ${k}件`, bad: (k) => `読み取れないコード ${k}件`,
+      ok: (k) => `有効な回答 ${k}件`, bad: (k) => `読み取れない、または別のバロメーターのコード ${k}件`, needLink: (k) => `コード${k}件：バロメーターのリンクからダッシュボードを開くと読み取れます。`,
       dup: (k) => `重複 ${k}件（除外）`, other: (k) => `別のバロメーターのコード ${k}件`,
       csvBad: "ファイルの列が正しくありません。テンプレートで形式を確認してください。",
       csvRows: (k) => `${k}行を取り込みました`, csvErr: (k) => `不完全な行 ${k}件`,
@@ -196,21 +196,25 @@
 
   // ---------- Reading codes ----------
   function readCodes(text) {
-    const found = String(text).toUpperCase().match(/CB1-[0-9A-Z]{4}-[0-9A-Z]{1,2}-[0-9A-Z]{16}/g) || [];
-    const loose = String(text).split(/\s+/).filter((w) => /^CB1-/i.test(w)).length;
     const seen = new Set(), responses = [], ids = new Set();
-    let bad = Math.max(0, loose - found.length), dup = 0, other = 0;
-    for (const c of found) {
-      if (seen.has(c)) { dup++; continue; }
-      seen.add(c);
-      const r = CB.decodeResponse(c);
-      if (!r) { bad++; continue; }
-      if (survey && r.surveyId !== survey.id) { other++; continue; }
+    let bad = 0, dup = 0, other = 0, needLink = 0;
+    for (const { code, strict } of CB.findCodes(text)) {
+      if (seen.has(code)) { dup++; continue; }
+      seen.add(code);
+      const legacy = code.startsWith("CB1-");
+      if (!survey && !legacy) { if (strict) needLink++; continue; }
+      const r = CB.decodeResponse(code, survey ? survey.id : null);
+      if (!r) {
+        if (!strict) continue;
+        // A legacy code from another barometer is recognisable, a short one just fails its check
+        if (legacy && CB.decodeResponse(code)) other++; else bad++;
+        continue;
+      }
       ids.add(r.surveyId);
       const name = survey && survey.teams[r.team] !== undefined ? survey.teams[r.team] : null;
       responses.push({ team: name || `#${r.team + 1}`, teamIdx: r.team, answers: r.answers });
     }
-    return { responses, bad, dup, other, mixed: !survey && ids.size > 1 };
+    return { responses, bad, dup, other, needLink, mixed: !survey && ids.size > 1 };
   }
 
   function build() {
@@ -262,6 +266,7 @@
       if (r.dup) out.push(`<span class="pill pill-watch">${CB.esc(t.dup(r.dup))}</span>`);
       if (r.other) out.push(`<span class="pill pill-barrier">${CB.esc(t.other(r.other))}</span>`);
       if (r.mixed) out.push(`<div class="notice" style="width:100%">${CB.esc(t.mixed)}</div>`);
+      if (r.needLink) out.push(`<div class="notice" style="width:100%">${CB.esc(t.needLink(r.needLink))}</div>`);
     }
     if (csvReport) {
       if (csvReport.badHeader) out.push(`<div class="error" style="width:100%">${CB.esc(t.csvBad)}</div>`);
@@ -278,7 +283,7 @@
     let list = [];
     try { list = JSON.parse(localStorage.getItem("cb-surveys-v1")) || []; } catch (e) { /* ignore */ }
     if (!list.length) return "";
-    const count = (id) => { try { return ((localStorage.getItem("cb-codes-" + id) || "").match(/CB1-/gi) || []).length; } catch (e) { return 0; } };
+    const count = (id) => { try { return CB.countCodes(localStorage.getItem("cb-codes-" + id) || "", id); } catch (e) { return 0; } };
     return `<p style="margin-top:28px">${CB.esc(t.pick)}</p><ul class="saved-list">${list.map((x) => `<li><a href="dashboard.html#s=${CB.esc(x.token)}">${CB.esc(x.name)}<span>${CB.esc(t.codesN(count(x.id)))}</span></a></li>`).join("")}</ul>`;
   }
 

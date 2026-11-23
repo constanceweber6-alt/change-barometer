@@ -208,29 +208,101 @@
     }
   }
 
-  function checksum(id, team, digits) {
-    let sum = team * 7;
-    for (const c of id) sum += B36.indexOf(c) * 3;
-    for (let i = 0; i < digits.length; i++) sum += Number(digits[i]) * (i + 1);
-    return B36[sum % 36];
+  // Response code: 10 characters, e.g. 7KQ2M-9XA4T
+  // 9 characters carry the team and the 15 answers (base 32), the last one is a check
+  // character that also depends on the barometer, so a code from another barometer is refused.
+  // Crockford alphabet: no I, L, O or U, so the code is easy to read and type.
+  const C32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  const CODE_RE = /^([0-9A-HJKMNP-TV-Z]{5})-?([0-9A-HJKMNP-TV-Z]{5})$/;
+
+  function normalizeCode(code) {
+    return String(code).trim().toUpperCase().replace(/\s+/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
   }
 
-  // Response code, e.g. CB1-K7Q2-3-453342115523441X
+  // The payload is mixed with an invertible step (odd multiplier modulo 2^45, plus an offset
+  // that depends on the barometer) so that codes look different even for the same team.
+  const M45 = 1n << 45n, MIX_A = 0x1B873593A5n;
+  const MIX_INV = (() => { let x = MIX_A; for (let i = 0; i < 6; i++) x = (x * (2n - MIX_A * x)) % M45; return ((x % M45) + M45) % M45; })();
+  const mixOffset = (surveyId) => { let h = 0n; for (const c of surveyId) h = (h * 37n + BigInt(B36.indexOf(c) + 1)) % M45; return (h * 0x9E3779B1n) % M45; };
+  const mix = (n, surveyId) => Number((BigInt(n) * MIX_A + mixOffset(surveyId)) % M45);
+  const unmix = (n, surveyId) => Number((((BigInt(n) - mixOffset(surveyId)) % M45 + M45) % M45 * MIX_INV) % M45);
+
+  function check32(payload, surveyId) {
+    let sum = 0;
+    for (let i = 0; i < payload.length; i++) sum += C32.indexOf(payload[i]) * (2 * i + 1);
+    for (let i = 0; i < surveyId.length; i++) sum += B36.indexOf(surveyId[i]) * (2 * i + 3) * 5;
+    return C32[sum % 32];
+  }
+
   function encodeResponse(surveyId, teamIndex, answers) {
     const digits = QUESTIONS.map((q) => answers[q.id]).join("");
     if (!/^[1-5]{15}$/.test(digits)) throw new Error("incomplete answers");
-    return `CB1-${surveyId}-${teamIndex.toString(36).toUpperCase()}-${digits}${checksum(surveyId, teamIndex, digits)}`;
+    if (!(teamIndex >= 0 && teamIndex < 1000)) throw new Error("team out of range");
+    let n = teamIndex;
+    for (const d of digits) n = n * 5 + (Number(d) - 1);
+    n = mix(n, surveyId);
+    let payload = "";
+    for (let i = 0; i < 9; i++) { payload = C32[n % 32] + payload; n = Math.floor(n / 32); }
+    const code = payload + check32(payload, surveyId);
+    return code.slice(0, 5) + "-" + code.slice(5);
   }
 
-  function decodeResponse(code) {
+  // Older long format, still accepted: CB1-K7Q2-3-453342115523441X
+  function decodeLegacy(code) {
     const m = String(code).trim().toUpperCase().match(/^CB1-([0-9A-Z]{4})-([0-9A-Z]{1,2})-([1-5]{15})([0-9A-Z])$/);
     if (!m) return null;
     const [, id, teamB36, digits, check] = m;
     const team = parseInt(teamB36, 36);
-    if (checksum(id, team, digits) !== check) return null;
+    let sum = team * 7;
+    for (const c of id) sum += B36.indexOf(c) * 3;
+    for (let i = 0; i < digits.length; i++) sum += Number(digits[i]) * (i + 1);
+    if (B36[sum % 36] !== check) return null;
     const answers = {};
     QUESTIONS.forEach((q, i) => { answers[q.id] = Number(digits[i]); });
     return { surveyId: id, team, answers };
+  }
+
+  // Returns { surveyId, team, answers }, or null if the code is not valid for this barometer.
+  function decodeResponse(code, surveyId) {
+    if (/^\s*CB1-/i.test(code)) {
+      const r = decodeLegacy(code);
+      return r && (!surveyId || r.surveyId === surveyId) ? r : null;
+    }
+    const m = normalizeCode(code).match(CODE_RE);
+    if (!m || !surveyId) return null;
+    const full = m[1] + m[2], payload = full.slice(0, 9);
+    if (check32(payload, surveyId) !== full[9]) return null;
+    let n = 0;
+    for (const c of payload) n = n * 32 + C32.indexOf(c);
+    n = unmix(n, surveyId);
+    if (n >= 1000 * 5 ** 15) return null;
+    const digits = [];
+    for (let i = 0; i < 15; i++) { digits.unshift(n % 5 + 1); n = Math.floor(n / 5); }
+    const answers = {};
+    QUESTIONS.forEach((q, i) => { answers[q.id] = digits[i]; });
+    return { surveyId, team: n, answers };
+  }
+
+  // Finds response codes in any pasted text (one per line, or a whole email).
+  // "strict" candidates have the dash, so a failed check means a typo; others are only kept if valid.
+  function findCodes(text) {
+    const up = String(text).toUpperCase();
+    const legacy = up.match(/CB1-[0-9A-Z]{4}-[0-9A-Z]{1,2}-[0-9A-Z]{16}/g) || [];
+    const rest = up.replace(/CB1-[0-9A-Z-]+/g, " ");
+    const out = legacy.map((c) => ({ code: c, strict: true }));
+    const re = /(^|[^0-9A-Z])([0-9A-Z]{5})(-?)([0-9A-Z]{5})(?![0-9A-Z])/g;
+    let m;
+    while ((m = re.exec(rest))) {
+      const raw = m[2] + m[4], norm = normalizeCode(raw);
+      if (!/^[0-9A-HJKMNP-TV-Z]{10}$/.test(norm)) continue;
+      out.push({ code: norm.slice(0, 5) + "-" + norm.slice(5), strict: m[3] === "-" });
+    }
+    return out;
+  }
+
+  // Number of distinct valid codes for a barometer in a stored text
+  function countCodes(text, surveyId) {
+    return new Set(findCodes(text).map((c) => c.code).filter((c) => decodeResponse(c, surveyId))).size;
   }
 
   // ---------- CSV import ----------
@@ -369,7 +441,7 @@
 
   const api = {
     STAGES, STAGE_NAMES, STAGE_HINTS, QUESTIONS, SCALE, ACTIONS, THRESHOLDS, MIN_RESPONSES, UI,
-    randomId, encodeSurvey, decodeSurvey, encodeResponse, decodeResponse, parseCsv, csvTemplate,
+    randomId, encodeSurvey, decodeSurvey, encodeResponse, decodeResponse, findCodes, countCodes, parseCsv, csvTemplate,
     stageScores, statusOf, barrierPoint, resistance, adoptionIndex, analyse, detectLang, saveLang, esc,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;

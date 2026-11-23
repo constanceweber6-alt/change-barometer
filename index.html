@@ -237,7 +237,7 @@
     }).join("")}</div>`;
   }
 
-  const count = (id) => { try { return ((localStorage.getItem("cb-codes-" + id) || "").match(/CB1-/gi) || []).length; } catch (e) { return 0; } };
+  const count = (id) => { try { return CB.countCodes(localStorage.getItem("cb-codes-" + id) || "", id); } catch (e) { return 0; } };
 
   function renderSaved(t) {
     const list = load();
