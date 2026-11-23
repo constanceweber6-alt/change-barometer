@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Schibsted+Grotesk:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/report.css">
 <style>
   .d-head { padding: 40px 0 24px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
   .d-head h1 { font-size: clamp(28px, 4vw, 42px); margin: 4px 0 0; line-height: 1.1; }
@@ -152,7 +153,6 @@
     .crow { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 160px; }
     .plan-table input { display: none; }
     table.plan-table { min-width: 0; }
-    body.print-plan main > *:not(#results):not(.d-head):not(#printDate), body.print-plan #results > *:not(#plan) { display: none !important; }
     .deck, .dlg { display: none !important; }
   }
   @media (max-width: 860px) {
@@ -169,7 +169,7 @@
   }
 </style>
 </head>
-<body data-page="dash">
+<body data-page="dash" class="has-report">
 <header id="nav" class="nav"></header>
 
 <main class="wrap">
@@ -240,6 +240,8 @@
     <div class="actions-row"><button class="btn btn-secondary btn-sm" type="button" id="deckPrev"></button><button class="btn btn-primary btn-sm" type="button" id="deckNext"></button></div>
   </div>
 </div>
+
+<div class="rp-doc" id="printDoc" aria-hidden="true"></div>
 
 <script src="assets/core.js"></script>
 <script src="assets/page.js"></script>

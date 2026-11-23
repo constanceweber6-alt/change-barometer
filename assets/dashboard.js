@@ -33,6 +33,14 @@
       backup: "Changer d'ordinateur", backupHint: "Les réponses et le plan restent uniquement dans ce navigateur. Une sauvegarde permet de les retrouver ailleurs.",
       backupDl: "Télécharger une sauvegarde", backupUp: "Restaurer", restored: "Sauvegarde restaurée", backupBad: "Ce fichier n'est pas une sauvegarde du baromètre.",
       deckOverview: "Vue d'ensemble", deckPlan: "Plan d'action retenu", deckPrev: "Précédent", deckNext: "Suivant", deckExit: "Quitter", deckRetained: "Actions retenues", deckReco: "Actions recommandées",
+      rpTool: "Baromètre du changement", rpResp: "Réponses", rpPart: "Participation", rpTeamsN: "Équipes analysées", rpRef: "Référence",
+      rpIndex: "indice d'adoption global",
+      rpRead: (b, n, st) => b ? `${b} équipe${b > 1 ? "s" : ""} sur ${n} ${b > 1 ? "ont" : "a"} un point de blocage. L'étape qui bloque le plus souvent : ${st}.` : "Aucune équipe n'a de point de blocage. Les efforts peuvent porter sur l'ancrage du changement dans la durée.",
+      rpAll: "Profil ADKAR, toutes équipes confondues", rpTeams: "Équipes", rpProfile: "Profil", rpMore: (k) => `Et ${k} autre${k > 1 ? "s" : ""} équipe${k > 1 ? "s" : ""}, détaillée${k > 1 ? "s" : ""} page suivante.`,
+      rpPrio: "Priorités par équipe", rpPrioSub: "Pour chaque équipe, l'étape à traiter et les actions retenues, ou à défaut les actions recommandées.",
+      rpHidden: (x) => `Équipes masquées car elles ont moins de 3 réponses : ${x}.`, rpPage: (a, b) => `Page ${a} sur ${b}`,
+      rpPlanSub: "Actions retenues, avec leur responsable et leur échéance.",
+      rpMethod: "Méthode : 15 affirmations notées de 1 à 5, trois par étape. En dessous de 3, l'étape est bloquante, de 3 à 4 elle est à surveiller, à partir de 4 elle est acquise. Le point de blocage est la première étape bloquante.",
       mTitle: "Comment les résultats sont calculés",
       mBody: [
         "Chaque étape du modèle (Conscience, Désir, Connaissance, Capacité, Renforcement) est mesurée par 3 affirmations notées de 1 à 5. Le score d'une étape est la moyenne de ses réponses.",
@@ -74,6 +82,14 @@
       backup: "Switching computer", backupHint: "Answers and the plan only stay in this browser. A backup file lets you open them somewhere else.",
       backupDl: "Download a backup", backupUp: "Restore", restored: "Backup restored", backupBad: "This file is not a barometer backup.",
       deckOverview: "Overview", deckPlan: "Action plan", deckPrev: "Previous", deckNext: "Next", deckExit: "Exit", deckRetained: "Kept actions", deckReco: "Recommended actions",
+      rpTool: "Change Barometer", rpResp: "Answers", rpPart: "Participation", rpTeamsN: "Teams analysed", rpRef: "Reference",
+      rpIndex: "overall adoption index",
+      rpRead: (b, n, st) => b ? `${b} team${b > 1 ? "s" : ""} out of ${n} ${b > 1 ? "have" : "has"} a barrier point. The stage that blocks most often: ${st}.` : "No team has a barrier point. Efforts can focus on making the change last.",
+      rpAll: "ADKAR profile, all teams", rpTeams: "Teams", rpProfile: "Profile", rpMore: (k) => `And ${k} more team${k > 1 ? "s" : ""}, detailed on the next page.`,
+      rpPrio: "Priorities by team", rpPrioSub: "For each team, the stage to address and the kept actions, or the recommended ones if none were kept.",
+      rpHidden: (x) => `Teams hidden because they have fewer than 3 answers: ${x}.`, rpPage: (a, b) => `Page ${a} of ${b}`,
+      rpPlanSub: "Kept actions, with their owner and due date.",
+      rpMethod: "Method: 15 statements rated from 1 to 5, three per stage. Below 3 the stage is a barrier, from 3 to 4 it needs watching, from 4 it is acquired. The barrier point is the first barrier stage.",
       mTitle: "How the results are calculated",
       mBody: [
         "Each stage of the model (Awareness, Desire, Knowledge, Ability, Reinforcement) is measured by 3 statements rated from 1 to 5. A stage's score is the average of its answers.",
@@ -115,6 +131,14 @@
       backup: "別のパソコンで使う", backupHint: "回答とプランはこのブラウザにのみ保存されます。バックアップファイルを使えば別の環境で開けます。",
       backupDl: "バックアップをダウンロード", backupUp: "復元", restored: "バックアップを復元しました", backupBad: "このファイルはバロメーターのバックアップではありません。",
       deckOverview: "全体像", deckPlan: "アクションプラン", deckPrev: "前へ", deckNext: "次へ", deckExit: "終了", deckRetained: "採用した施策", deckReco: "推奨される施策",
+      rpTool: "チェンジ・バロメーター", rpResp: "回答数", rpPart: "回答率", rpTeamsN: "分析対象チーム", rpRef: "コード",
+      rpIndex: "全体の定着度指数",
+      rpRead: (b, n, st) => b ? `${n}チーム中${b}チームに障壁があります。最も多い障壁の段階：${st}。` : "障壁のあるチームはありません。変化を長く根付かせることに注力できます。",
+      rpAll: "ADKARプロファイル（全チーム）", rpTeams: "チーム", rpProfile: "プロファイル", rpMore: (k) => `ほか${k}チームは次のページに掲載しています。`,
+      rpPrio: "チーム別の優先事項", rpPrioSub: "各チームについて、取り組むべき段階と採用した施策（なければ推奨施策）を示します。",
+      rpHidden: (x) => `回答が3件未満のため非表示のチーム：${x}。`, rpPage: (a, b) => `${b}ページ中${a}ページ`,
+      rpPlanSub: "採用した施策と担当者、期限。",
+      rpMethod: "算出方法：1〜5で評価する15の設問（各段階3問）。3未満は障壁、3以上4未満は要注意、4以上は定着済み。障壁ポイントは最初の「障壁」の段階です。",
       mTitle: "結果の算出方法",
       mBody: [
         "モデルの各段階（認知、意欲、知識、能力、定着）を、1〜5で評価する3つの設問で測定します。各段階のスコアは回答の平均です。",
@@ -418,6 +442,85 @@
     return r(x) - r(y);
   });
 
+
+  // ---------- Printable report (PDF): synthesis first, then priorities by team ----------
+  const COLORS = { ok: ["var(--ok)", "#fff"], watch: ["var(--watch-soft)", "#7A4F08"], barrier: ["var(--barrier)", "#fff"], none: ["var(--none)", "var(--muted)"] };
+  function buildReport(mode) {
+    const lang = Page.lang, t = T[lang], sep = CB.UI[lang].sep, rz = CB.UI[lang].resist;
+    const gs = groups(), shown = sorted(gs.filter((g) => g.a.enough)), hidden = gs.filter((g) => !g.a.enough && g.a.n >= 0);
+    const all = CB.analyse(shown.flatMap((g) => g.rs));
+    const date = new Date().toLocaleDateString(lang === "ja" ? "ja-JP" : lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+    const title = survey ? survey.name : isDemo ? t.demoName : t.noSurvey;
+    const top = `<div class="rp-top"><b>${CB.esc(t.rpTool)}</b><span>${CB.esc(date)}</span></div>`;
+    const stName = (st) => CB.STAGE_NAMES[lang][st];
+    const fmtDate = (d) => d ? new Date(d + "T12:00").toLocaleDateString(lang === "ja" ? "ja-JP" : lang === "fr" ? "fr-FR" : "en-GB") : "";
+    const plannedText = (g) => (state.plan[g.key] || []).map((x) => ({ text: actionText(x, lang), owner: x.owner, due: fmtDate(x.due) }));
+    const planRows = shown.flatMap((g) => plannedText(g).map((x) => ({ g, ...x })));
+    const planTable = planRows.length ? `<table class="rp-table"><thead><tr><th>${CB.esc(t.colTeam)}</th><th>${CB.esc(t.colAction)}</th><th style="width:34mm">${CB.esc(t.owner)}</th><th style="width:24mm">${CB.esc(t.due)}</th></tr></thead>
+      <tbody>${planRows.map((r) => `<tr><td><b>${CB.esc(r.g.name)}</b></td><td>${CB.esc(r.text)}</td><td>${CB.esc(r.owner || "")}</td><td>${CB.esc(r.due)}</td></tr>`).join("")}</tbody></table>` : "";
+    const fine = `<p class="rp-fine">${CB.esc(t.rpMethod)}</p><p class="rp-fine">${CB.esc(CB.UI[lang].tm)}</p>`;
+
+    if (mode === "plan") {
+      $("printDoc").innerHTML = `<section class="rp-flow">${top}<h1 class="rp-title" style="font-size:20pt">${CB.esc(title)}</h1>
+        <h2 class="rp-h2">${CB.esc(t.planTitle)}</h2><p class="rp-lead">${CB.esc(t.rpPlanSub)}</p>${planTable || `<p class="rp-empty">${CB.esc(t.planEmpty)}</p>`}</section>`;
+      return;
+    }
+
+    const known = gs.filter((g) => g.size), totalSize = known.reduce((a, g) => a + g.size, 0), answeredKnown = known.reduce((a, g) => a + g.a.n, 0);
+    const nAll = gs.reduce((a, g) => a + g.a.n, 0);
+    const blocked = shown.filter((g) => g.a.barrier && g.a.barrier.kind === "barrier");
+    const freq = {};
+    blocked.forEach((g) => { freq[g.a.barrier.stage] = (freq[g.a.barrier.stage] || 0) + 1; });
+    const topStage = Object.keys(freq).sort((a, b) => freq[b] - freq[a])[0];
+    const dots = (a) => `<span class="rp-dots">${CB.STAGES.map((s) => { const c = a.status[s] === "watch" ? ["var(--watch)"] : COLORS[a.status[s]]; const stop = a.barrier && a.barrier.stage === s; return `<i class="${stop ? "stop" : ""}" style="background:${c[0]}" title="${CB.esc(stName(s))}"></i>`; }).join("")}</span>`;
+    const resPill = (r) => r ? `<span class="rp-tag" style="background:${r === "high" ? "var(--barrier-soft)" : r === "moderate" ? "var(--watch-soft)" : "var(--ok-soft)"};color:${r === "high" ? "#A8321B" : r === "moderate" ? "#8A5A0B" : "#11665A"}">${CB.esc(rz[r])}</span>` : "";
+    const firstRows = shown.slice(0, 8), more = shown.length - firstRows.length;
+    const multi = shown.length > 0;
+
+    const page1 = `<section class="rp-page">
+      ${top}
+      <h1 class="rp-title">${CB.esc(title)}</h1>
+      <div class="rp-meta">
+        <div><span>${CB.esc(t.rpResp)}</span>${nAll}</div>
+        <div><span>${CB.esc(t.rpPart)}</span>${totalSize ? `${pct(answeredKnown, totalSize)} %` : "-"}</div>
+        <div><span>${CB.esc(t.rpTeamsN)}</span>${shown.length}</div>
+        <div><span>${CB.esc(t.rpRef)}</span>${survey ? CB.esc(survey.id) : "-"}</div>
+      </div>
+      <div class="rp-verdict" style="background:var(--paper)">
+        <div class="rp-score">${all.index === null ? "-" : all.index}<small>/100</small></div>
+        <div><p class="rp-fine" style="margin:0 0 1.5mm">${CB.esc(t.rpIndex)}</p><p>${CB.esc(t.rpRead(blocked.length, shown.length, topStage ? stName(topStage) : ""))}</p></div>
+      </div>
+      ${multi ? `<p class="rp-h3">${CB.esc(t.rpAll)}</p>
+      <div class="rp-big-line">${CB.STAGES.map((s) => { const c = COLORS[all.status[s]]; const stop = all.barrier && all.barrier.stage === s;
+        return `<div class="${stop ? "stop" : ""}" style="background:${c[0]};color:${c[1]}"><b>${all.scores[s] === null ? "" : all.scores[s].toFixed(1)}</b><span>${CB.esc(stName(s))}</span></div>`; }).join("")}</div>
+      <p class="rp-h3">${CB.esc(t.rpTeams)}</p>
+      <table class="rp-table" style="margin-bottom:3mm"><thead><tr><th>${CB.esc(t.colTeam)}</th><th style="width:30mm">${CB.esc(t.rpProfile)}</th><th style="width:34mm">${CB.esc(t.barrierAt)}</th><th style="width:24mm">${CB.esc(t.resist)}</th><th style="width:13mm;text-align:right">${CB.esc(t.index)}</th></tr></thead>
+        <tbody>${firstRows.map((g) => `<tr><td><b>${CB.esc(g.name)}</b><br><span class="rp-fine">${CB.esc(g.size ? t.of(g.a.n, g.size) : t.resp(g.a.n))}</span></td>
+          <td>${dots(g.a)}</td><td>${CB.esc(g.a.barrier ? stName(g.a.barrier.stage) : t.noneB)}</td><td>${resPill(g.a.resistance)}</td><td style="text-align:right"><b>${g.a.index}</b></td></tr>`).join("")}</tbody></table>
+      ${more > 0 ? `<p class="rp-fine">${CB.esc(t.rpMore(more))}</p>` : ""}
+      <p class="rp-fine" style="margin-top:2mm">${["ok", "watch", "barrier"].map((k) => `<span class="rp-dots"><i style="background:${k === "watch" ? "var(--watch)" : COLORS[k][0]}"></i></span> ${CB.esc(CB.UI[lang].levels[k])}`).join("&nbsp;&nbsp;&nbsp;")}</p>` : ""}
+      <div class="rp-foot"><span>constanceweber6-alt.github.io/change-barometer</span><span></span></div>
+    </section>`;
+
+    const teamBlocks = shown.map((g) => {
+      const a = g.a, bp = a.barrier, planned = plannedText(g);
+      const acts = planned.length ? planned : CB.ACTIONS[bp ? bp.stage : "R"][lang].slice(0, 2).map((x) => ({ text: x }));
+      return `<div class="rp-team"><div><h3>${CB.esc(g.name)}</h3>
+          <p class="meta">${CB.esc(t.barrierAt)}${CB.esc(sep)}<b style="color:var(--ink)">${CB.esc(bp ? stName(bp.stage) : t.noneB)}</b></p>
+          <p class="meta">${CB.esc(t.adoption)}${CB.esc(sep)}${a.index}</p></div>
+        <div><p class="rp-h3" style="margin-bottom:1.5mm">${CB.esc(planned.length ? t.deckRetained : t.deckReco)}</p>
+          <ul>${acts.map((x) => `<li>${CB.esc(x.text)}${x.owner || x.due ? ` <span class="owner">(${CB.esc([x.owner, x.due].filter(Boolean).join(", "))})</span>` : ""}</li>`).join("")}</ul></div></div>`;
+    }).join("");
+    const flow = `<section class="rp-flow">${top}
+      <h2 class="rp-h2">${CB.esc(t.rpPrio)}</h2><p class="rp-lead">${CB.esc(t.rpPrioSub)}</p>
+      ${teamBlocks}
+      ${hidden.length ? `<p class="rp-fine" style="margin-top:4mm">${CB.esc(t.rpHidden(hidden.map((g) => g.name).join(lang === "ja" ? "、" : ", ")))}</p>` : ""}
+      ${planTable ? `<div style="break-inside:avoid;margin-top:9mm"><h2 class="rp-h2">${CB.esc(t.planTitle)}</h2><p class="rp-lead">${CB.esc(t.rpPlanSub)}</p>${planTable}</div>` : ""}
+      <div style="margin-top:8mm;break-inside:avoid">${fine}</div>
+    </section>`;
+    $("printDoc").innerHTML = page1 + (shown.length ? flow : "");
+  }
+
   // ---------- Exports ----------
   const fileBase = () => (survey ? survey.name : isDemo ? "example" : "barometer").replace(/[^\wÀ-ɏ぀-ヿ一-鿿-]+/g, "_");
   const csvCell = (v) => `"${String(v).replace(/"/g, '""')}"`;
@@ -445,10 +548,12 @@
     Page.download(`${fileBase()}_action_plan.csv`, lines.join("\r\n"));
   }
 
+  let printMode = "full";
   function printPlan() {
-    document.body.classList.add("print-plan");
+    printMode = "plan";
+    buildReport("plan");
     window.print();
-    setTimeout(() => document.body.classList.remove("print-plan"), 500);
+    setTimeout(() => { printMode = "full"; }, 500);
   }
 
   // ---------- Backup (a file the consultant keeps, nothing is hosted) ----------
@@ -585,7 +690,8 @@
   $("tpl").addEventListener("click", () => Page.download("change-barometer-template.csv", CB.csvTemplate()));
   $("demo").addEventListener("click", () => { if (!/demo/.test(location.hash)) { location.hash = "demo"; location.reload(); } });
   $("csvOut").addEventListener("click", exportCsv);
-  $("printOut").addEventListener("click", () => window.print());
+  $("printOut").addEventListener("click", () => { printMode = "full"; buildReport("full"); window.print(); });
+  window.addEventListener("beforeprint", () => buildReport(printMode));
   $("shareBtn").addEventListener("click", openShare);
   $("shareClose").addEventListener("click", () => $("shareDlg").close());
   $("presentBtn").addEventListener("click", openDeck);

@@ -36,7 +36,7 @@ It also includes:
 * **Presentation mode**: a full screen view for a steering committee, with an overview, one screen per team and the action plan. Arrow keys to move, Esc to exit.
 * **Detail by statement**: the 15 statements for each team, with the weakest points highlighted.
 
-Results can be exported as PDF or CSV.
+Results can be exported as CSV, or as a two page PDF report: a synthesis first (overall index, ADKAR profile, one line per team), then the priorities and the action plan by team.
 
 ## Anonymity and data
 
