@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change Barometer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23141B2D%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%277%27 fill=%27%23D9472B%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Schibsted+Grotesk:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .narrow { max-width: 760px; }
+  .s-head { padding: 44px 0 20px; }
+  .s-head h1 { font-size: clamp(28px, 4vw, 40px); margin: 0 0 10px; line-height: 1.15; }
+  .anon { display: flex; gap: 12px; align-items: flex-start; background: var(--ok-soft); color: #0F5249; border-radius: var(--r-md); padding: 14px 16px; font-size: 15px; margin-bottom: 24px; }
+  .anon svg { flex: none; margin-top: 2px; }
+  .teams { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip span { display: inline-block; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 15px; }
+  .chip input:checked + span { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .chip input:focus-visible + span { outline: 3px solid var(--watch); outline-offset: 2px; }
+  .progress { position: sticky; top: 62px; z-index: 5; background: var(--paper); padding: 12px 0; margin-bottom: 8px; }
+  .bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .25s; }
+  .progress .note { margin-top: 6px; display: block; }
+  .q { border: 0; margin: 0; padding: 22px 0; border-bottom: 1px solid var(--line); }
+  .q legend { font-weight: 600; font-size: 18px; padding: 0; margin-bottom: 4px; float: left; width: 100%; padding-bottom: 12px; display: flex; gap: 12px; }
+  .q legend .n { color: var(--muted); font-weight: 400; min-width: 24px; }
+  .scale { clear: both; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .opt { display: grid; }
+  .opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .opt span { display: grid; place-items: center; text-align: center; min-height: 58px; padding: 8px 6px; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-md); cursor: pointer; font-size: 14px; line-height: 1.25; }
+  .opt span b { display: block; font-family: var(--display); font-size: 18px; }
+  .opt:hover span { border-color: var(--ink-2); }
+  .opt input:checked + span { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .opt input:focus-visible + span { outline: 3px solid var(--watch); outline-offset: 2px; }
+  .opt em { font-style: normal; }
+  .scale-legend { display: none; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .q.missing legend { color: var(--barrier); }
+  .done { text-align: center; padding: 40px 28px; }
+  .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: clamp(18px, 4vw, 26px); letter-spacing: .04em; background: var(--paper); border: 2px dashed var(--rail); border-radius: var(--r-md); padding: 18px 12px; margin: 20px 0; word-break: break-all; user-select: all; }
+  @media (max-width: 620px) {
+    .opt span { min-height: 48px; }
+    .opt span em { display: none; }
+    .scale-legend { display: flex; }
+    .progress { top: 104px; }
+  }
+</style>
+</head>
+<body data-page="survey">
+<header id="nav" class="nav"></header>
+
+<main class="wrap narrow">
+  <div id="missing" class="s-head" hidden>
+    <h1 id="mTitle"></h1>
+    <p class="lead" id="mText"></p>
+    <form id="pasteForm" class="panel">
+      <div class="field"><label for="pasted" id="pasteLabel"></label><input class="input" id="pasted" autocomplete="off"></div>
+      <div class="error" id="pasteError" hidden></div>
+      <button class="btn btn-primary" type="submit" id="pasteBtn" style="margin-top:8px"></button>
+    </form>
+  </div>
+
+  <form id="survey" hidden novalidate>
+    <div class="s-head">
+      <p class="sub" id="project"></p>
+      <h1 id="title"></h1>
+      <p class="lead" id="intro"></p>
+    </div>
+    <div class="anon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      <span id="anon"></span>
+    </div>
+    <fieldset class="q" id="teamQ">
+      <legend><span id="teamLabel"></span></legend>
+      <div class="teams" id="teams"></div>
+    </fieldset>
+    <div class="progress" aria-hidden="true"><div class="bar"><i id="barFill"></i></div><span class="note" id="count"></span><div class="scale-legend"><span id="lo"></span><span id="hi"></span></div></div>
+    <div id="questions"></div>
+    <div class="error" id="formError" hidden style="margin-top:20px"></div>
+    <div class="actions-row" style="margin:24px 0"><button class="btn btn-primary" type="submit" id="submit"></button></div>
+  </form>
+
+  <section id="done" class="panel done" hidden style="margin-top:44px">
+    <h1 id="dTitle" style="font-size:30px;margin:0 0 8px"></h1>
+    <p class="lead" id="dText" style="margin:0 auto;max-width:48ch"></p>
+    <div class="code" id="code"></div>
+    <div class="actions-row" style="justify-content:center">
+      <button class="btn btn-primary" type="button" id="copy"></button>
+      <button class="btn btn-quiet" type="button" id="again"></button>
+    </div>
+    <p class="note" id="dNote" style="margin-top:20px"></p>
+  </section>
+</main>
+
+<footer id="footer" class="site"></footer>
+
+<script src="assets/core.js"></script>
+<script src="assets/page.js"></script>
+<script>
+(function () {
+  const T = {
+    fr: {
+      mTitle: "Ce lien de sondage est incomplet",
+      mText: "Le sondage s'ouvre avec le lien envoyé par la personne qui pilote le projet. Collez ce lien ci-dessous ou demandez-le lui.",
+      paste: "Lien du sondage", pasteBtn: "Ouvrir le sondage", pasteErr: "Ce lien n'est pas reconnu. Vérifiez qu'il a été copié en entier.",
+      project: "Projet", title: "Comment vivez-vous ce changement ?",
+      intro: "15 affirmations, environ 3 minutes. Il n'y a pas de bonne ou de mauvaise réponse : dites simplement où vous en êtes aujourd'hui.",
+      anon: "Vos réponses sont anonymes. Rien n'est envoyé sur internet : à la fin, vous obtenez un code qui contient seulement votre équipe et vos 15 notes. Les résultats d'une équipe ne s'affichent qu'à partir de 3 réponses.",
+      team: "Votre équipe", count: (a, n) => `${a} sur ${n} réponses`,
+      submit: "Obtenir mon code", errTeam: "Choisissez votre équipe.", errQ: (k) => `Il reste ${k} affirmation${k > 1 ? "s" : ""} sans réponse.`,
+      dTitle: "Merci pour vos réponses",
+      dText: "Copiez ce code et renvoyez-le à la personne qui vous a transmis le sondage, par mail ou par messagerie.",
+      copy: "Copier le code", copied: "Code copié", again: "Répondre à nouveau",
+      dNote: "Le code ne contient ni votre nom ni votre adresse. Fermer cette page efface vos réponses.",
+    },
+    en: {
+      mTitle: "This survey link is incomplete",
+      mText: "The survey opens from the link sent by the person leading the project. Paste that link below or ask them for it.",
+      paste: "Survey link", pasteBtn: "Open the survey", pasteErr: "This link is not recognised. Check that it was copied in full.",
+      project: "Project", title: "How are you experiencing this change?",
+      intro: "15 statements, about 3 minutes. There is no right or wrong answer: just say where you stand today.",
+      anon: "Your answers are anonymous. Nothing is sent over the internet: at the end you get a code that only holds your team and your 15 ratings. A team's results only appear from 3 answers.",
+      team: "Your team", count: (a, n) => `${a} of ${n} answered`,
+      submit: "Get my code", errTeam: "Choose your team.", errQ: (k) => `${k} statement${k > 1 ? "s" : ""} still without an answer.`,
+      dTitle: "Thank you for your answers",
+      dText: "Copy this code and send it back to the person who shared the survey with you, by email or chat.",
+      copy: "Copy the code", copied: "Code copied", again: "Answer again",
+      dNote: "The code contains neither your name nor your email address. Closing this page erases your answers.",
+    },
+    ja: {
+      mTitle: "このアンケートのリンクは不完全です",
+      mText: "アンケートは、プロジェクト担当者から送られたリンクから開きます。リンクを下に貼り付けるか、担当者に確認してください。",
+      paste: "アンケートのリンク", pasteBtn: "アンケートを開く", pasteErr: "このリンクは認識できません。すべてコピーされているか確認してください。",
+      project: "プロジェクト", title: "この変革をどう感じていますか？",
+      intro: "15の設問、約3分です。正解も不正解もありません。今の率直な状態をお答えください。",
+      anon: "回答は匿名です。インターネットには何も送信されません。最後に、チームと15の評価だけを含むコードが表示されます。各チームの結果は回答が3件以上集まった場合のみ表示されます。",
+      team: "所属チーム", count: (a, n) => `${n}問中${a}問回答済み`,
+      submit: "コードを表示", errTeam: "チームを選択してください。", errQ: (k) => `未回答の設問が${k}問あります。`,
+      dTitle: "ご回答ありがとうございました",
+      dText: "このコードをコピーし、アンケートを送ってくれた方にメールやチャットで返信してください。",
+      copy: "コードをコピー", copied: "コピーしました", again: "もう一度回答する",
+      dNote: "コードにはお名前もメールアドレスも含まれません。このページを閉じると回答は消去されます。",
+    },
+  };
+  const $ = (id) => document.getElementById(id);
+  const answers = {};
+  let team = null, ctx = Page.surveyFromHash(), code = null, tried = false;
+
+  function view() {
+    const ok = ctx && ctx.survey;
+    $("missing").hidden = !!ok;
+    $("survey").hidden = !ok || !!code;
+    $("done").hidden = !code;
+  }
+
+  function progress(t) {
+    const a = Object.keys(answers).length, n = CB.QUESTIONS.length;
+    $("barFill").style.width = (a / n * 100) + "%";
+    $("count").textContent = t.count(a, n);
+  }
+
+  function render(lang) {
+    const t = T[lang];
+    const set = (id, v) => { $(id).textContent = v; };
+    set("mTitle", t.mTitle); set("mText", t.mText); set("pasteLabel", t.paste); set("pasteBtn", t.pasteBtn);
+    if (!$("pasteError").hidden) set("pasteError", t.pasteErr);
+    view();
+    if (ctx && ctx.survey) {
+      const sv = ctx.survey;
+      $("project").textContent = t.project + CB.UI[lang].sep + sv.name;
+      set("title", t.title); set("intro", t.intro); set("anon", t.anon); set("teamLabel", t.team); set("submit", t.submit);
+      $("teams").innerHTML = sv.teams.map((x, i) => `<label class="chip"><input type="radio" name="team" value="${i}"${team === i ? " checked" : ""}><span>${CB.esc(x)}</span></label>`).join("");
+      $("questions").innerHTML = CB.QUESTIONS.map((q, i) => `<fieldset class="q${tried && !answers[q.id] ? " missing" : ""}" id="q-${q.id}">
+        <legend><span class="n">${i + 1}</span><span>${CB.esc(q[lang])}</span></legend>
+        <div class="scale">${CB.SCALE[lang].map((lbl, k) => `<label class="opt"><input type="radio" name="${q.id}" value="${k + 1}"${answers[q.id] === k + 1 ? " checked" : ""}><span><b>${k + 1}</b><em>${CB.esc(lbl)}</em></span></label>`).join("")}</div>
+      </fieldset>`).join("");
+      progress(t);
+      $("lo").textContent = "1 = " + CB.SCALE[lang][0]; $("hi").textContent = "5 = " + CB.SCALE[lang][4];
+      if (!$("formError").hidden) validate(false);
+    }
+    set("dTitle", t.dTitle); set("dText", t.dText); set("copy", t.copy); set("again", t.again); set("dNote", t.dNote);
+    if (code) $("code").textContent = code;
+  }
+
+  function validate(focus) {
+    const t = T[Page.lang];
+    const missing = CB.QUESTIONS.filter((q) => !answers[q.id]);
+    let msg = null, target = null;
+    if (team === null) { msg = t.errTeam; target = $("teamQ"); }
+    else if (missing.length) { msg = t.errQ(missing.length); target = $("q-" + missing[0].id); }
+    $("formError").hidden = !msg;
+    if (msg) $("formError").textContent = msg;
+    CB.QUESTIONS.forEach((q) => { const el = $("q-" + q.id); if (el) el.classList.toggle("missing", tried && !answers[q.id]); });
+    if (msg && focus && target) { target.scrollIntoView({ block: "center" }); const inp = target.querySelector("input"); if (inp) inp.focus({ preventScroll: true }); }
+    return !msg;
+  }
+
+  $("survey").addEventListener("change", (e) => {
+    const el = e.target;
+    if (el.name === "team") team = Number(el.value);
+    else if (/^[ADKBR][1-3]$/.test(el.name)) {
+      answers[el.name] = Number(el.value);
+      $("q-" + el.name).classList.remove("missing");
+      progress(T[Page.lang]);
+    }
+    if (!$("formError").hidden) validate(false);
+  });
+
+  $("survey").addEventListener("submit", (e) => {
+    e.preventDefault();
+    tried = true;
+    if (!validate(true)) return;
+    code = CB.encodeResponse(ctx.survey.id, team, answers);
+    render(Page.lang);
+    window.scrollTo(0, 0);
+    $("copy").focus();
+  });
+
+  $("copy").addEventListener("click", () => Page.copy(code, T[Page.lang].copied));
+  $("again").addEventListener("click", () => {
+    code = null; team = null; tried = false;
+    Object.keys(answers).forEach((k) => delete answers[k]);
+    $("formError").hidden = true;
+    render(Page.lang); window.scrollTo(0, 0);
+  });
+
+  $("pasteForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const m = $("pasted").value.match(/s=([A-Za-z0-9_-]+)/);
+    const sv = m && CB.decodeSurvey(m[1]);
+    if (!sv) { $("pasteError").hidden = false; $("pasteError").textContent = T[Page.lang].pasteErr; return; }
+    location.hash = "s=" + m[1];
+  });
+  window.addEventListener("hashchange", () => { ctx = Page.surveyFromHash(); Page.refreshShell(); render(Page.lang); });
+
+  Page.start(render);
+})();
+</script>
+</body>
+</html>

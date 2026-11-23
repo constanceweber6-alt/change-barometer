@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change Barometer</title>
+<meta name="description" content="A free ADKAR inspired survey that shows where each team is stuck during a transformation, with recommended actions. No server, no account.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23141B2D%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%277%27 fill=%27%23D9472B%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Schibsted+Grotesk:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+  .demo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 22px 20px; }
+  .demo-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+  .demo-head strong { font-family: var(--display); font-size: 18px; }
+  .demo-team { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .demo-team:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
+  .demo-team .t { font-weight: 600; font-size: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; gap: 8px; }
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin: 20px 0 48px; padding: 0; list-style: none; counter-reset: st; }
+  .steps li { counter-increment: st; border-top: 3px solid var(--ink); padding-top: 14px; }
+  .steps li::before { content: counter(st); font-family: var(--display); font-weight: 800; font-size: 30px; line-height: 1; display: block; margin-bottom: 8px; }
+  .steps h3 { margin: 0 0 6px; font-size: 18px; }
+  .steps p { margin: 0; color: var(--ink-2); font-size: 16px; }
+  .create-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .linkbox { display: grid; gap: 6px; margin-bottom: 18px; }
+  .linkbox .row { display: flex; gap: 8px; }
+  .linkbox input { flex: 1; min-width: 0; font-size: 14px; }
+  .mail { white-space: pre-wrap; background: var(--paper); border-radius: var(--r-md); padding: 14px; font-size: 15px; margin: 0 0 10px; }
+  .saved { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+  .saved li { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; }
+  .saved .meta { font-size: 14px; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 15px; }
+  @media (max-width: 860px) {
+    .hero-grid, .create-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .steps { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body data-page="home">
+<header id="nav" class="nav"></header>
+
+<main class="wrap">
+  <section class="hero hero-grid">
+    <div>
+      <h1 id="h1"></h1>
+      <p class="lead" id="lead"></p>
+      <div class="actions-row">
+        <a class="btn btn-primary" href="#create" id="ctaCreate"></a>
+        <a class="btn btn-secondary" href="dashboard.html#demo" id="ctaDemo"></a>
+      </div>
+      <p class="sub" style="margin-top:16px" id="privacy"></p>
+    </div>
+    <div class="demo" aria-labelledby="demoTitle">
+      <div class="demo-head"><strong id="demoTitle"></strong><span class="note" id="demoNote"></span></div>
+      <div id="demoTeams"></div>
+    </div>
+  </section>
+
+  <h2 id="howTitle" style="font-size:28px;margin:8px 0 0"></h2>
+  <ol class="steps" id="steps"></ol>
+
+  <section id="create" class="create-grid">
+    <form class="panel" id="form" novalidate>
+      <h2 id="formTitle"></h2>
+      <p class="sub" id="formSub" style="margin-bottom:18px"></p>
+      <div class="field">
+        <label for="name" id="nameLabel"></label>
+        <input class="input" id="name" maxlength="120" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="teams" id="teamsLabel"></label>
+        <textarea class="input" id="teams" rows="6" style="resize:vertical"></textarea>
+        <span class="note" id="teamsHint"></span>
+      </div>
+      <div class="error" id="formError" hidden></div>
+      <div class="actions-row" style="margin-top:12px"><button class="btn btn-primary" type="submit" id="submit"></button></div>
+    </form>
+
+    <div>
+      <div class="panel" id="result" hidden>
+        <h2 id="resTitle"></h2>
+        <p class="sub" id="resSub" style="margin-bottom:18px"></p>
+        <div class="linkbox">
+          <span class="label" id="surveyLabel"></span>
+          <div class="row"><input class="input" id="surveyLink" readonly><button class="btn btn-secondary btn-sm" type="button" data-copy="surveyLink" id="copy1"></button></div>
+        </div>
+        <div class="linkbox">
+          <span class="label" id="dashLabel"></span>
+          <div class="row"><input class="input" id="dashLink" readonly><button class="btn btn-secondary btn-sm" type="button" data-copy="dashLink" id="copy2"></button></div>
+          <span class="note" id="dashHint"></span>
+        </div>
+        <span class="label" id="mailLabel"></span>
+        <pre class="mail" id="mail"></pre>
+        <div class="actions-row">
+          <button class="btn btn-secondary btn-sm" type="button" id="copyMail"></button>
+          <a class="btn btn-quiet btn-sm" id="openDash" href="#"></a>
+        </div>
+      </div>
+      <div class="panel" id="savedPanel">
+        <h3 id="savedTitle"></h3>
+        <ul class="saved" id="saved"></ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="footer" class="site"></footer>
+
+<script src="assets/core.js"></script>
+<script src="assets/page.js"></script>
+<script>
+(function () {
+  const T = {
+    fr: {
+      title: "Baromètre du changement",
+      h1: "Voyez où chaque équipe décroche pendant une transformation.",
+      lead: "Un sondage de 15 questions inspiré du modèle ADKAR. Pour chaque équipe, le tableau de bord montre l'étape qui bloque, le niveau de résistance et les actions à lancer.",
+      create: "Créer un baromètre", demo: "Voir un exemple",
+      privacy: "Gratuit, sans compte et sans serveur. Les réponses restent anonymes et ne sont stockées nulle part.",
+      demoTitle: "Projet : nouvel outil de gestion", demoNote: "exemple",
+      demoTeams: [["Finance", "Bloquant sur Envie"], ["Service client", "À surveiller sur Capacité"]],
+      stop: "Blocage", watchpt: "Point d'attention",
+      how: "Comment ça marche",
+      steps: [
+        ["Créez le baromètre", "Donnez un nom au projet et listez les équipes concernées. Vous obtenez un lien de sondage et un lien de tableau de bord."],
+        ["Envoyez le lien", "Chaque personne choisit son équipe et répond en 3 minutes. À la fin, elle reçoit un code anonyme à vous renvoyer."],
+        ["Lisez les résultats", "Collez les codes dans le tableau de bord, ou importez un export Forms. Vous voyez le blocage de chaque équipe et quoi faire."],
+      ],
+      formTitle: "Nouveau baromètre", formSub: "Tout se fait dans votre navigateur.",
+      name: "Nom du projet de transformation", namePh: "Ex. Déploiement du nouvel ERP",
+      teams: "Équipes (une par ligne)", teamsPh: "Finance\nAchats\nService client",
+      teamsHint: "Entre 1 et 60 équipes. Les résultats d'une équipe s'affichent à partir de 3 réponses.",
+      submit: "Générer les liens",
+      errName: "Indiquez le nom du projet.", errTeams: "Ajoutez au moins une équipe.", errMany: "60 équipes au maximum.",
+      resTitle: "Votre baromètre est prêt", resSub: "Gardez le lien du tableau de bord pour vous. Le baromètre est aussi enregistré dans ce navigateur.",
+      surveyLink: "Lien du sondage à envoyer aux équipes", dashLink: "Lien du tableau de bord (pour vous)",
+      dashHint: "Le tableau de bord ne contient aucune réponse tant que vous n'y collez pas les codes reçus.",
+      mail: "Message à copier", copy: "Copier", copied: "Copié", copyMail: "Copier le message", openDash: "Ouvrir le tableau de bord",
+      mailText: (n, url) => `Objet : 3 minutes pour nous aider sur le projet ${n}\n\nBonjour,\n\nNous voulons savoir comment vous vivez le projet ${n}, pour adapter l'accompagnement à votre équipe.\n\nLe questionnaire prend 3 minutes et il est anonyme : ${url}\n\nÀ la fin, un code s'affiche. Il suffit de me le renvoyer par retour de mail. Il ne contient ni votre nom ni votre adresse.\n\nMerci beaucoup !`,
+      saved: "Vos baromètres sur ce navigateur", none: "Aucun baromètre pour l'instant. Le premier apparaîtra ici.",
+      teamsCount: (k) => `${k} équipe${k > 1 ? "s" : ""}`, open: "Ouvrir", code: "code", remove: "Retirer", removed: "Baromètre retiré de cette liste",
+    },
+    en: {
+      title: "Change Barometer",
+      h1: "See where each team gets stuck during a transformation.",
+      lead: "A 15 question survey inspired by the ADKAR model. For each team, the dashboard shows the stage that blocks, the level of resistance and the actions to take.",
+      create: "Create a barometer", demo: "See an example",
+      privacy: "Free, no account and no server. Answers stay anonymous and are not stored anywhere.",
+      demoTitle: "Project: new management tool", demoNote: "example",
+      demoTeams: [["Finance", "Barrier on Desire"], ["Customer service", "Watch on Ability"]],
+      stop: "Barrier", watchpt: "Watch point",
+      how: "How it works",
+      steps: [
+        ["Create the barometer", "Name the project and list the teams involved. You get a survey link and a dashboard link."],
+        ["Send the link", "Each person picks their team and answers in 3 minutes. At the end, they get an anonymous code to send back to you."],
+        ["Read the results", "Paste the codes into the dashboard, or import a Forms export. You see each team's barrier and what to do about it."],
+      ],
+      formTitle: "New barometer", formSub: "Everything happens in your browser.",
+      name: "Name of the transformation project", namePh: "e.g. New ERP rollout",
+      teams: "Teams (one per line)", teamsPh: "Finance\nProcurement\nCustomer service",
+      teamsHint: "Between 1 and 60 teams. A team's results appear from 3 answers.",
+      submit: "Generate the links",
+      errName: "Enter the project name.", errTeams: "Add at least one team.", errMany: "60 teams at most.",
+      resTitle: "Your barometer is ready", resSub: "Keep the dashboard link for yourself. The barometer is also saved in this browser.",
+      surveyLink: "Survey link to send to the teams", dashLink: "Dashboard link (for you)",
+      dashHint: "The dashboard holds no answers until you paste in the codes you receive.",
+      mail: "Message to copy", copy: "Copy", copied: "Copied", copyMail: "Copy the message", openDash: "Open the dashboard",
+      mailText: (n, url) => `Subject: 3 minutes to help us with ${n}\n\nHello,\n\nWe would like to know how you are experiencing the ${n} project, so we can adapt the support to your team.\n\nThe survey takes 3 minutes and is anonymous: ${url}\n\nAt the end, a code appears. Just reply to this email with it. It contains neither your name nor your email address.\n\nThank you!`,
+      saved: "Your barometers in this browser", none: "No barometer yet. Your first one will appear here.",
+      teamsCount: (k) => `${k} team${k > 1 ? "s" : ""}`, open: "Open", code: "code", remove: "Remove", removed: "Barometer removed from this list",
+    },
+    ja: {
+      title: "チェンジ・バロメーター",
+      h1: "変革のなかで、どのチームがどこでつまずいているかが見える。",
+      lead: "ADKARモデルを参考にした15問のアンケートです。チームごとに、障壁となっている段階、抵抗の度合い、取るべき施策をダッシュボードで示します。",
+      create: "バロメーターを作成", demo: "サンプルを見る",
+      privacy: "無料、アカウント不要、サーバーなし。回答は匿名で、どこにも保存されません。",
+      demoTitle: "プロジェクト：新しい管理ツール", demoNote: "サンプル",
+      demoTeams: [["経理", "意欲が障壁"], ["カスタマーサービス", "能力が要注意"]],
+      stop: "障壁", watchpt: "要注意",
+      how: "使い方",
+      steps: [
+        ["バロメーターを作成", "プロジェクト名と対象チームを入力すると、アンケート用リンクとダッシュボード用リンクが発行されます。"],
+        ["リンクを送る", "回答者はチームを選び、3分で回答します。最後に表示される匿名コードを返信してもらいます。"],
+        ["結果を読む", "コードをダッシュボードに貼り付けるか、Formsのエクスポートを取り込みます。各チームの障壁と打ち手がわかります。"],
+      ],
+      formTitle: "新しいバロメーター", formSub: "すべてブラウザ内で完結します。",
+      name: "変革プロジェクト名", namePh: "例：新ERPの導入",
+      teams: "チーム（1行に1つ）", teamsPh: "経理\n購買\nカスタマーサービス",
+      teamsHint: "1〜60チーム。各チームの結果は回答が3件以上集まると表示されます。",
+      submit: "リンクを発行",
+      errName: "プロジェクト名を入力してください。", errTeams: "チームを1つ以上追加してください。", errMany: "チームは60までです。",
+      resTitle: "バロメーターの準備ができました", resSub: "ダッシュボード用リンクはご自身で保管してください。このブラウザにも保存されています。",
+      surveyLink: "チームに送るアンケート用リンク", dashLink: "ダッシュボード用リンク（ご自身用）",
+      dashHint: "受け取ったコードを貼り付けるまで、ダッシュボードに回答は含まれません。",
+      mail: "コピー用メッセージ", copy: "コピー", copied: "コピーしました", copyMail: "メッセージをコピー", openDash: "ダッシュボードを開く",
+      mailText: (n, url) => `件名：「${n}」に関する3分間のアンケートのお願い\n\nお疲れさまです。\n\n「${n}」について皆さんがどう感じているかを把握し、チームに合ったサポートを行うためのアンケートです。\n\n所要時間は3分、匿名です：${url}\n\n最後に表示されるコードを、このメールへの返信でお送りください。コードにはお名前もメールアドレスも含まれません。\n\nご協力よろしくお願いいたします。`,
+      saved: "このブラウザのバロメーター", none: "まだバロメーターはありません。作成するとここに表示されます。",
+      teamsCount: (k) => `${k}チーム`, open: "開く", code: "コード", remove: "削除", removed: "一覧から削除しました",
+    },
+  };
+
+  const KEY = "cb-surveys-v1";
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } };
+  const store = (list) => { try { localStorage.setItem(KEY, JSON.stringify(list.slice(0, 30))); } catch (e) { /* ignore */ } };
+  const $ = (id) => document.getElementById(id);
+  let current = null;
+
+  const urlFor = (page, token) => new URL(page, location.href).href.split("#")[0] + "#s=" + token;
+
+  // Demo lines in the hero: fixed example scores
+  const DEMO = [
+    { A: 3.9, D: 2.6, K: 3.1, B: 2.9, R: 2.7 },
+    { A: 4.4, D: 4.2, K: 4.1, B: 3.4, R: 3.6 },
+  ];
+  function lineHtml(scores, lang, t) {
+    const bp = CB.barrierPoint(scores);
+    return `<div class="line">${CB.STAGES.map((s) => {
+      const st = CB.statusOf(scores[s]);
+      const stop = bp && bp.stage === s;
+      return `<div class="station${stop ? " stop" : ""}${stop && bp.kind === "watch" ? " watchpt" : ""}" data-s="${st}">
+        <span class="dot">${s === "B" ? "A" : s}</span>
+        <span class="name">${CB.esc(CB.STAGE_NAMES[lang][s])}</span>
+        ${stop ? `<span class="stop-label">${CB.esc(bp.kind === "watch" ? t.watchpt : t.stop)}</span>` : `<span class="score">${scores[s].toFixed(1)}</span>`}
+      </div>`;
+    }).join("")}</div>`;
+  }
+
+  function renderSaved(t) {
+    const list = load();
+    $("saved").innerHTML = list.length ? list.map((s, i) => `<li>
+      <div><strong>${CB.esc(s.name)}</strong><div class="meta">${CB.esc(t.teamsCount(s.teams.length))}, ${CB.esc(t.code)} ${CB.esc(s.id)}</div></div>
+      <div class="actions-row"><a class="btn btn-secondary btn-sm" href="${CB.esc(urlFor("dashboard.html", s.token))}">${CB.esc(t.open)}</a>
+      <button class="btn btn-quiet btn-sm" type="button" data-rm="${i}">${CB.esc(t.remove)}</button></div></li>`).join("")
+      : `<li class="empty" style="border:0;padding:0">${CB.esc(t.none)}</li>`;
+    $("saved").querySelectorAll("[data-rm]").forEach((b) => b.addEventListener("click", () => {
+      const l = load(); l.splice(Number(b.dataset.rm), 1); store(l); renderSaved(T[Page.lang]); Page.toast(T[Page.lang].removed);
+    }));
+  }
+
+  function renderResult(t) {
+    if (!current) return;
+    const s = urlFor("survey.html", current.token);
+    const d = urlFor("dashboard.html", current.token);
+    $("surveyLink").value = s; $("dashLink").value = d; $("openDash").href = d;
+    $("mail").textContent = t.mailText(current.name, s);
+    $("result").hidden = false;
+  }
+
+  function render(lang) {
+    const t = T[lang];
+    document.title = t.title;
+    const set = (id, v) => { $(id).textContent = v; };
+    set("h1", t.h1); set("lead", t.lead); set("ctaCreate", t.create); set("ctaDemo", t.demo); set("privacy", t.privacy);
+    set("demoTitle", t.demoTitle); set("demoNote", t.demoNote); set("howTitle", t.how);
+    $("demoTeams").innerHTML = DEMO.map((sc, i) => `<div class="demo-team"><div class="t"><span>${CB.esc(t.demoTeams[i][0])}</span>
+      <span class="pill pill-${CB.barrierPoint(sc).kind}">${CB.esc(t.demoTeams[i][1])}</span></div>${lineHtml(sc, lang, t)}</div>`).join("");
+    $("steps").innerHTML = t.steps.map(([h, p]) => `<li><h3>${CB.esc(h)}</h3><p>${CB.esc(p)}</p></li>`).join("");
+    set("formTitle", t.formTitle); set("formSub", t.formSub); set("nameLabel", t.name); set("teamsLabel", t.teams);
+    $("name").placeholder = t.namePh; $("teams").placeholder = t.teamsPh; set("teamsHint", t.teamsHint); set("submit", t.submit);
+    set("resTitle", t.resTitle); set("resSub", t.resSub); set("surveyLabel", t.surveyLink); set("dashLabel", t.dashLink);
+    set("dashHint", t.dashHint); set("mailLabel", t.mail); set("copy1", t.copy); set("copy2", t.copy);
+    set("copyMail", t.copyMail); set("openDash", t.openDash); set("savedTitle", t.saved);
+    if (!$("formError").hidden && $("formError").dataset.key) set("formError", t[$("formError").dataset.key]);
+    renderResult(t);
+    renderSaved(t);
+  }
+
+  $("form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const t = T[Page.lang];
+    const name = $("name").value.trim();
+    const teams = [...new Set($("teams").value.split(/\r?\n/).map((x) => x.trim()).filter(Boolean))];
+    const err = !name ? "errName" : !teams.length ? "errTeams" : teams.length > 60 ? "errMany" : null;
+    if (err) {
+      $("formError").textContent = t[err]; $("formError").dataset.key = err; $("formError").hidden = false;
+      $(err === "errName" ? "name" : "teams").focus();
+      return;
+    }
+    $("formError").hidden = true;
+    const survey = { id: CB.randomId(), name, teams: teams.map((x) => x.slice(0, 60)) };
+    current = { ...survey, token: CB.encodeSurvey(survey) };
+    const list = load(); list.unshift(current); store(list);
+    render(Page.lang);
+    $("result").scrollIntoView({ block: "start" });
+  });
+
+  document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => Page.copy($(b.dataset.copy).value, T[Page.lang].copied)));
+  $("copyMail").addEventListener("click", () => Page.copy($("mail").textContent, T[Page.lang].copied));
+
+  Page.start(render);
+})();
+</script>
+</body>
+</html>
