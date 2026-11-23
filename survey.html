@@ -88,6 +88,7 @@
     <div class="code" id="code"></div>
     <div class="actions-row" style="justify-content:center">
       <button class="btn btn-primary" type="button" id="copy"></button>
+      <a class="btn btn-secondary" id="mail" href="#"></a>
       <button class="btn btn-quiet" type="button" id="again"></button>
     </div>
     <p class="note" id="dNote" style="margin-top:20px"></p>
@@ -112,8 +113,8 @@
       submit: "Obtenir mon code", errTeam: "Choisissez votre équipe.", errQ: (k) => `Il reste ${k} affirmation${k > 1 ? "s" : ""} sans réponse.`,
       dTitle: "Merci pour vos réponses",
       dText: "Copiez ce code et renvoyez-le à la personne qui vous a transmis le sondage, par mail ou par messagerie.",
-      copy: "Copier le code", copied: "Code copié", again: "Répondre à nouveau",
-      dNote: "Le code ne contient ni votre nom ni votre adresse. Fermer cette page efface vos réponses.",
+      copy: "Copier le code", copied: "Code copié", again: "Répondre à nouveau", mail: "Envoyer par mail", mailSubj: "Mon code de réponse", left: (k) => ` (encore ${k})`,
+      dNote: "Le code ne contient ni votre nom ni votre adresse. Vos réponses sont effacées dès que vous fermez cet onglet.",
     },
     en: {
       mTitle: "This survey link is incomplete",
@@ -126,8 +127,8 @@
       submit: "Get my code", errTeam: "Choose your team.", errQ: (k) => `${k} statement${k > 1 ? "s" : ""} still without an answer.`,
       dTitle: "Thank you for your answers",
       dText: "Copy this code and send it back to the person who shared the survey with you, by email or chat.",
-      copy: "Copy the code", copied: "Code copied", again: "Answer again",
-      dNote: "The code contains neither your name nor your email address. Closing this page erases your answers.",
+      copy: "Copy the code", copied: "Code copied", again: "Answer again", mail: "Send by email", mailSubj: "My response code", left: (k) => ` (${k} left)`,
+      dNote: "The code contains neither your name nor your email address. Your answers are erased as soon as you close this tab.",
     },
     ja: {
       mTitle: "このアンケートのリンクは不完全です",
@@ -140,8 +141,8 @@
       submit: "コードを表示", errTeam: "チームを選択してください。", errQ: (k) => `未回答の設問が${k}問あります。`,
       dTitle: "ご回答ありがとうございました",
       dText: "このコードをコピーし、アンケートを送ってくれた方にメールやチャットで返信してください。",
-      copy: "コードをコピー", copied: "コピーしました", again: "もう一度回答する",
-      dNote: "コードにはお名前もメールアドレスも含まれません。このページを閉じると回答は消去されます。",
+      copy: "コードをコピー", copied: "コピーしました", again: "もう一度回答する", mail: "メールで送る", mailSubj: "回答コード", left: (k) => `（残り${k}問）`,
+      dNote: "コードにはお名前もメールアドレスも含まれません。このタブを閉じると回答は消去されます。",
     },
   };
   const $ = (id) => document.getElementById(id);
@@ -159,6 +160,7 @@
     const a = Object.keys(answers).length, n = CB.QUESTIONS.length;
     $("barFill").style.width = (a / n * 100) + "%";
     $("count").textContent = t.count(a, n);
+    $("submit").textContent = t.submit + (team === null || a < n ? t.left(n - a + (team === null ? 1 : 0)) : "");
   }
 
   function render(lang) {
@@ -170,7 +172,7 @@
     if (ctx && ctx.survey) {
       const sv = ctx.survey;
       $("project").textContent = t.project + CB.UI[lang].sep + sv.name;
-      set("title", t.title); set("intro", t.intro); set("anon", t.anon); set("teamLabel", t.team); set("submit", t.submit);
+      set("title", t.title); set("intro", t.intro); set("anon", t.anon); set("teamLabel", t.team);
       $("teams").innerHTML = sv.teams.map((x, i) => `<label class="chip"><input type="radio" name="team" value="${i}"${team === i ? " checked" : ""}><span>${CB.esc(x)}</span></label>`).join("");
       $("questions").innerHTML = CB.QUESTIONS.map((q, i) => `<fieldset class="q${tried && !answers[q.id] ? " missing" : ""}" id="q-${q.id}">
         <legend><span class="n">${i + 1}</span><span>${CB.esc(q[lang])}</span></legend>
@@ -180,7 +182,8 @@
       $("lo").textContent = "1 = " + CB.SCALE[lang][0]; $("hi").textContent = "5 = " + CB.SCALE[lang][4];
       if (!$("formError").hidden) validate(false);
     }
-    set("dTitle", t.dTitle); set("dText", t.dText); set("copy", t.copy); set("again", t.again); set("dNote", t.dNote);
+    set("dTitle", t.dTitle); set("dText", t.dText); set("copy", t.copy); set("again", t.again); set("dNote", t.dNote); set("mail", t.mail);
+    if (code) $("mail").href = "mailto:?subject=" + encodeURIComponent(t.mailSubj + (ctx && ctx.survey ? " : " + ctx.survey.name : "")) + "&body=" + encodeURIComponent(code);
     if (code) $("code").textContent = code;
   }
 
@@ -197,13 +200,33 @@
     return !msg;
   }
 
+  // Draft kept for this tab only, so a refresh does not lose the answers
+  const draftKey = () => "cb-draft-" + (ctx && ctx.survey ? ctx.survey.id : "");
+  const saveDraft = () => { try { sessionStorage.setItem(draftKey(), JSON.stringify({ team, answers })); } catch (e) { /* ignore */ } };
+  const clearDraft = () => { try { sessionStorage.removeItem(draftKey()); } catch (e) { /* ignore */ } };
+  try {
+    const d = JSON.parse(sessionStorage.getItem(draftKey()) || "null");
+    if (d && ctx && ctx.survey) { if (d.team !== null && d.team < ctx.survey.teams.length) team = d.team; Object.assign(answers, d.answers || {}); }
+  } catch (e) { /* ignore */ }
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function goNext(fromId) {
+    const i = CB.QUESTIONS.findIndex((q) => q.id === fromId);
+    const next = CB.QUESTIONS.slice(i + 1).concat(CB.QUESTIONS.slice(0, i)).find((q) => !answers[q.id]);
+    const target = next ? $("q-" + next.id) : $("submit");
+    setTimeout(() => target.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" }), 180);
+  }
+
   $("survey").addEventListener("change", (e) => {
     const el = e.target;
-    if (el.name === "team") team = Number(el.value);
+    if (el.name === "team") { team = Number(el.value); progress(T[Page.lang]); saveDraft(); if (!Object.keys(answers).length) goNext(null); }
     else if (/^[ADKBR][1-3]$/.test(el.name)) {
+      const first = !answers[el.name];
       answers[el.name] = Number(el.value);
       $("q-" + el.name).classList.remove("missing");
       progress(T[Page.lang]);
+      saveDraft();
+      if (first) goNext(el.name);
     }
     if (!$("formError").hidden) validate(false);
   });
@@ -213,6 +236,7 @@
     tried = true;
     if (!validate(true)) return;
     code = CB.encodeResponse(ctx.survey.id, team, answers);
+    clearDraft();
     render(Page.lang);
     window.scrollTo(0, 0);
     $("copy").focus();
@@ -220,7 +244,7 @@
 
   $("copy").addEventListener("click", () => Page.copy(code, T[Page.lang].copied));
   $("again").addEventListener("click", () => {
-    code = null; team = null; tried = false;
+    code = null; team = null; tried = false; clearDraft();
     Object.keys(answers).forEach((k) => delete answers[k]);
     $("formError").hidden = true;
     render(Page.lang); window.scrollTo(0, 0);

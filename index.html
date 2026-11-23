@@ -95,6 +95,7 @@
         <pre class="mail" id="mail"></pre>
         <div class="actions-row">
           <button class="btn btn-secondary btn-sm" type="button" id="copyMail"></button>
+          <a class="btn btn-secondary btn-sm" id="testSurvey" href="#" target="_blank" rel="noopener"></a>
           <a class="btn btn-quiet btn-sm" id="openDash" href="#"></a>
         </div>
       </div>
@@ -137,7 +138,7 @@
       resTitle: "Votre baromètre est prêt", resSub: "Gardez le lien du tableau de bord pour vous. Le baromètre est aussi enregistré dans ce navigateur.",
       surveyLink: "Lien du sondage à envoyer aux équipes", dashLink: "Lien du tableau de bord (pour vous)",
       dashHint: "Le tableau de bord ne contient aucune réponse tant que vous n'y collez pas les codes reçus.",
-      mail: "Message à copier", copy: "Copier", copied: "Copié", copyMail: "Copier le message", openDash: "Ouvrir le tableau de bord",
+      mail: "Message à copier", copy: "Copier", copied: "Copié", copyMail: "Copier le message", openDash: "Ouvrir le tableau de bord", test: "Tester le sondage", answers: (k) => `${k} réponse${k > 1 ? "s" : ""} reçue${k > 1 ? "s" : ""}`,
       mailText: (n, url) => `Objet : 3 minutes pour nous aider sur le projet ${n}\n\nBonjour,\n\nNous voulons savoir comment vous vivez le projet ${n}, pour adapter l'accompagnement à votre équipe.\n\nLe questionnaire prend 3 minutes et il est anonyme : ${url}\n\nÀ la fin, un code s'affiche. Il suffit de me le renvoyer par retour de mail. Il ne contient ni votre nom ni votre adresse.\n\nMerci beaucoup !`,
       saved: "Vos baromètres sur ce navigateur", none: "Aucun baromètre pour l'instant. Le premier apparaîtra ici.",
       teamsCount: (k) => `${k} équipe${k > 1 ? "s" : ""}`, open: "Ouvrir", code: "code", remove: "Retirer", removed: "Baromètre retiré de cette liste",
@@ -166,7 +167,7 @@
       resTitle: "Your barometer is ready", resSub: "Keep the dashboard link for yourself. The barometer is also saved in this browser.",
       surveyLink: "Survey link to send to the teams", dashLink: "Dashboard link (for you)",
       dashHint: "The dashboard holds no answers until you paste in the codes you receive.",
-      mail: "Message to copy", copy: "Copy", copied: "Copied", copyMail: "Copy the message", openDash: "Open the dashboard",
+      mail: "Message to copy", copy: "Copy", copied: "Copied", copyMail: "Copy the message", openDash: "Open the dashboard", test: "Try the survey", answers: (k) => `${k} answer${k > 1 ? "s" : ""} received`,
       mailText: (n, url) => `Subject: 3 minutes to help us with ${n}\n\nHello,\n\nWe would like to know how you are experiencing the ${n} project, so we can adapt the support to your team.\n\nThe survey takes 3 minutes and is anonymous: ${url}\n\nAt the end, a code appears. Just reply to this email with it. It contains neither your name nor your email address.\n\nThank you!`,
       saved: "Your barometers in this browser", none: "No barometer yet. Your first one will appear here.",
       teamsCount: (k) => `${k} team${k > 1 ? "s" : ""}`, open: "Open", code: "code", remove: "Remove", removed: "Barometer removed from this list",
@@ -195,7 +196,7 @@
       resTitle: "バロメーターの準備ができました", resSub: "ダッシュボード用リンクはご自身で保管してください。このブラウザにも保存されています。",
       surveyLink: "チームに送るアンケート用リンク", dashLink: "ダッシュボード用リンク（ご自身用）",
       dashHint: "受け取ったコードを貼り付けるまで、ダッシュボードに回答は含まれません。",
-      mail: "コピー用メッセージ", copy: "コピー", copied: "コピーしました", copyMail: "メッセージをコピー", openDash: "ダッシュボードを開く",
+      mail: "コピー用メッセージ", copy: "コピー", copied: "コピーしました", copyMail: "メッセージをコピー", openDash: "ダッシュボードを開く", test: "アンケートを試す", answers: (k) => `回答${k}件`,
       mailText: (n, url) => `件名：「${n}」に関する3分間のアンケートのお願い\n\nお疲れさまです。\n\n「${n}」について皆さんがどう感じているかを把握し、チームに合ったサポートを行うためのアンケートです。\n\n所要時間は3分、匿名です：${url}\n\n最後に表示されるコードを、このメールへの返信でお送りください。コードにはお名前もメールアドレスも含まれません。\n\nご協力よろしくお願いいたします。`,
       saved: "このブラウザのバロメーター", none: "まだバロメーターはありません。作成するとここに表示されます。",
       teamsCount: (k) => `${k}チーム`, open: "開く", code: "コード", remove: "削除", removed: "一覧から削除しました",
@@ -228,10 +229,12 @@
     }).join("")}</div>`;
   }
 
+  const count = (id) => { try { return ((localStorage.getItem("cb-codes-" + id) || "").match(/CB1-/gi) || []).length; } catch (e) { return 0; } };
+
   function renderSaved(t) {
     const list = load();
     $("saved").innerHTML = list.length ? list.map((s, i) => `<li>
-      <div><strong>${CB.esc(s.name)}</strong><div class="meta">${CB.esc(t.teamsCount(s.teams.length))}, ${CB.esc(t.code)} ${CB.esc(s.id)}</div></div>
+      <div><strong>${CB.esc(s.name)}</strong><div class="meta">${CB.esc(t.teamsCount(s.teams.length))}, ${CB.esc(t.answers(count(s.id)))}</div></div>
       <div class="actions-row"><a class="btn btn-secondary btn-sm" href="${CB.esc(urlFor("dashboard.html", s.token))}">${CB.esc(t.open)}</a>
       <button class="btn btn-quiet btn-sm" type="button" data-rm="${i}">${CB.esc(t.remove)}</button></div></li>`).join("")
       : `<li class="empty" style="border:0;padding:0">${CB.esc(t.none)}</li>`;
@@ -244,7 +247,7 @@
     if (!current) return;
     const s = urlFor("survey.html", current.token);
     const d = urlFor("dashboard.html", current.token);
-    $("surveyLink").value = s; $("dashLink").value = d; $("openDash").href = d;
+    $("surveyLink").value = s; $("dashLink").value = d; $("openDash").href = d; $("testSurvey").href = s;
     $("mail").textContent = t.mailText(current.name, s);
     $("result").hidden = false;
   }
@@ -262,7 +265,7 @@
     $("name").placeholder = t.namePh; $("teams").placeholder = t.teamsPh; set("teamsHint", t.teamsHint); set("submit", t.submit);
     set("resTitle", t.resTitle); set("resSub", t.resSub); set("surveyLabel", t.surveyLink); set("dashLabel", t.dashLink);
     set("dashHint", t.dashHint); set("mailLabel", t.mail); set("copy1", t.copy); set("copy2", t.copy);
-    set("copyMail", t.copyMail); set("openDash", t.openDash); set("savedTitle", t.saved);
+    set("copyMail", t.copyMail); set("openDash", t.openDash); set("testSurvey", t.test); set("savedTitle", t.saved);
     if (!$("formError").hidden && $("formError").dataset.key) set("formError", t[$("formError").dataset.key]);
     renderResult(t);
     renderSaved(t);

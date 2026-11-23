@@ -50,6 +50,29 @@
   .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
   .empty-state .line { max-width: 420px; margin: 0 auto 18px; opacity: .55; }
   .method { margin-top: 28px; }
+  .collapsed-bar { display: none; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  #inputPanel.collapsed { padding: 16px 22px; }
+  #inputPanel.collapsed .input-grid, #inputPanel.collapsed .report { display: none; }
+  #inputPanel.collapsed .collapsed-bar { display: flex; }
+  .heat th[scope="row"] a { color: inherit; text-decoration: none; }
+  .heat th[scope="row"] a:hover { text-decoration: underline; }
+  .team { scroll-margin-top: 80px; }
+  .team.flash { box-shadow: 0 0 0 3px var(--ink); transition: box-shadow .3s; }
+  .detail { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .detail summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+  .qrows { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 8px; }
+  .qrow { display: grid; grid-template-columns: minmax(0, 1fr) 90px 30px; gap: 10px; align-items: center; font-size: 14px; color: var(--ink-2); }
+  .qstage { margin: 14px 0 0; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .qrows + .qstage { margin-top: 12px; }
+  .qrow .st { font-family: var(--display); font-weight: 700; font-size: 12px; color: var(--muted); }
+  .qrow .bar { height: 8px; background: var(--none); border-radius: 4px; overflow: hidden; }
+  .qrow .bar i { display: block; height: 100%; border-radius: 4px; }
+  .qrow b { font-variant-numeric: tabular-nums; text-align: right; color: var(--ink); }
+  .qrow.low { color: var(--ink); font-weight: 600; }
+  .saved-list { list-style: none; padding: 0; margin: 16px auto 0; max-width: 520px; display: grid; gap: 8px; text-align: left; }
+  .saved-list a { display: flex; justify-content: space-between; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px 16px; text-decoration: none; color: var(--ink); font-weight: 600; }
+  .saved-list a:hover { border-color: var(--ink); }
+  .saved-list span { color: var(--muted); font-weight: 400; font-size: 14px; }
   .method summary { cursor: pointer; font-weight: 600; }
   .method p, .method li { color: var(--ink-2); font-size: 15px; }
   @media (max-width: 860px) {
@@ -80,13 +103,13 @@
   <p class="print-only note" id="printDate"></p>
 
   <section class="panel no-print" id="inputPanel">
+    <div class="collapsed-bar"><span id="loaded"></span><button class="btn btn-secondary btn-sm" type="button" id="expand"></button></div>
     <div class="input-grid">
       <div>
         <label class="label" for="codes" id="codesLabel"></label>
         <p class="note" id="codesHint" style="margin:4px 0 10px"></p>
         <textarea class="textarea" id="codes" spellcheck="false" autocomplete="off"></textarea>
         <div class="actions-row" style="margin-top:12px">
-          <button class="btn btn-primary" type="button" id="analyse"></button>
           <button class="btn btn-quiet" type="button" id="clear"></button>
         </div>
       </div>
@@ -121,7 +144,7 @@
   const T = {
     fr: {
       kicker: "Tableau de bord", demoTeams: ["Finance", "Achats", "Supply chain", "Service client", "IT"], noSurvey: "Résultats du baromètre", demoName: "Exemple : déploiement d'un nouvel ERP",
-      codes: "Codes de réponse", codesHint: "Collez les codes reçus, un par ligne. Vous pouvez coller un mail entier : les codes sont repérés automatiquement.",
+      codes: "Codes de réponse", codesHint: "Collez les codes reçus, ou des mails entiers : les codes sont repérés et analysés automatiquement. Ils restent enregistrés dans ce navigateur.", expand: "Ajouter ou modifier des réponses", loaded: (k) => `${k} réponse${k > 1 ? "s" : ""} chargée${k > 1 ? "s" : ""}`, detail: "Détail par question", low: "point le plus faible", pick: "Ou ouvrez un de vos baromètres :", codesN: (k) => `${k} réponse${k > 1 ? "s" : ""}`,
       analyse: "Analyser", clear: "Tout effacer", cleared: "Données effacées",
       csv: "Ou importez un fichier", csvHint: "Export Microsoft Forms ou Google Forms : une colonne TEAM (ou EQUIPE) et une colonne par question, de A1 à R3, avec des notes de 1 à 5.",
       csvBtn: "Importer un CSV", tpl: "Télécharger le modèle", demoL: "Pas encore de réponses ?", demo: "Charger un exemple",
@@ -151,7 +174,7 @@
     },
     en: {
       kicker: "Dashboard", demoTeams: ["Finance", "Procurement", "Supply chain", "Customer service", "IT"], noSurvey: "Barometer results", demoName: "Example: new ERP rollout",
-      codes: "Response codes", codesHint: "Paste the codes you received, one per line. You can paste a whole email: codes are picked out automatically.",
+      codes: "Response codes", codesHint: "Paste the codes you received, or whole emails: codes are picked out and analysed automatically. They stay saved in this browser.", expand: "Add or edit answers", loaded: (k) => `${k} answer${k > 1 ? "s" : ""} loaded`, detail: "Detail by statement", low: "weakest point", pick: "Or open one of your barometers:", codesN: (k) => `${k} answer${k > 1 ? "s" : ""}`,
       analyse: "Analyse", clear: "Clear all", cleared: "Data cleared",
       csv: "Or import a file", csvHint: "Microsoft Forms or Google Forms export: a TEAM column and one column per question, from A1 to R3, with ratings from 1 to 5.",
       csvBtn: "Import a CSV", tpl: "Download the template", demoL: "No answers yet?", demo: "Load an example",
@@ -181,7 +204,7 @@
     },
     ja: {
       kicker: "ダッシュボード", demoTeams: ["経理", "購買", "サプライチェーン", "カスタマーサービス", "IT"], noSurvey: "バロメーターの結果", demoName: "サンプル：新ERPの導入",
-      codes: "回答コード", codesHint: "受け取ったコードを1行に1つずつ貼り付けてください。メール本文をそのまま貼り付けても、コードだけを自動で読み取ります。",
+      codes: "回答コード", codesHint: "受け取ったコードやメール本文を貼り付けると、コードを自動で読み取って分析します。データはこのブラウザに保存されます。", expand: "回答を追加・編集", loaded: (k) => `回答${k}件を読み込み済み`, detail: "設問ごとの詳細", low: "最も低い項目", pick: "または保存済みのバロメーターを開く：", codesN: (k) => `回答${k}件`,
       analyse: "分析する", clear: "すべて消去", cleared: "データを消去しました",
       csv: "またはファイルを取り込む", csvHint: "Microsoft FormsまたはGoogle Formsのエクスポート：TEAM列と、A1からR3までの設問ごとの列（1〜5の評価）。",
       csvBtn: "CSVを取り込む", tpl: "テンプレートをダウンロード", demoL: "まだ回答がない場合", demo: "サンプルを読み込む",
@@ -314,23 +337,46 @@
     $("report").innerHTML = out.join("");
   }
 
+  function savedHtml(t) {
+    if (survey || isDemo) return "";
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem("cb-surveys-v1")) || []; } catch (e) { /* ignore */ }
+    if (!list.length) return "";
+    const count = (id) => { try { return ((localStorage.getItem("cb-codes-" + id) || "").match(/CB1-/gi) || []).length; } catch (e) { return 0; } };
+    return `<p style="margin-top:28px">${CB.esc(t.pick)}</p><ul class="saved-list">${list.map((x) => `<li><a href="dashboard.html#s=${CB.esc(x.token)}">${CB.esc(x.name)}<span>${CB.esc(t.codesN(count(x.id)))}</span></a></li>`).join("")}</ul>`;
+  }
+
+  function questionDetail(rs, lang, t) {
+    const avg = CB.QUESTIONS.map((q) => ({ q, v: rs.reduce((a, r) => a + r.answers[q.id], 0) / rs.length }));
+    const cut = avg.map((x) => Math.round(x.v * 10) / 10).sort((a, b) => a - b)[2];
+    const lowest = avg.filter((x) => Math.round(x.v * 10) / 10 <= cut && x.v < CB.THRESHOLDS.ok).map((x) => x.q.id);
+    const color = (v) => v < CB.THRESHOLDS.barrier ? "var(--barrier)" : v < CB.THRESHOLDS.ok ? "var(--watch)" : "var(--ok)";
+    const rowHtml = ({ q, v }) => `<li class="qrow${lowest.includes(q.id) ? " low" : ""}"${lowest.includes(q.id) ? ` title="${CB.esc(t.low)}"` : ""}>
+        <span>${CB.esc(q[lang])}</span>
+        <span class="bar"><i style="width:${(v - 1) / 4 * 100}%;background:${color(v)}"></i></span><b>${v.toFixed(1)}</b></li>`;
+    return `<details class="detail no-print"><summary>${CB.esc(t.detail)}</summary>${CB.STAGES.map((st) => `
+      <p class="qstage">${CB.esc(CB.STAGE_NAMES[lang][st])}</p>
+      <ul class="qrows">${avg.filter((x) => x.q.stage === st).map(rowHtml).join("")}</ul>`).join("")}</details>`;
+  }
+
   function render(lang) {
     const t = T[lang];
     const set = (id, v) => { $(id).textContent = v; };
     set("kicker", t.kicker + (survey ? ` | code ${survey.id}` : ""));
     set("title", survey ? survey.name : isDemo ? t.demoName : t.noSurvey);
-    set("codesLabel", t.codes); set("codesHint", t.codesHint); set("analyse", t.analyse); set("clear", t.clear);
+    set("codesLabel", t.codes); set("codesHint", t.codesHint); set("expand", t.expand); set("clear", t.clear);
     set("csvLabel", t.csv); set("csvHint", t.csvHint); set("csvBtn", t.csvBtn); set("tpl", t.tpl);
     set("demoLabel", t.demoL); set("demo", t.demo); set("csvOut", t.csvOut); set("printOut", t.printOut);
     set("mTitle", t.mTitle);
     $("mBody").innerHTML = t.mBody.map((p) => `<p>${CB.esc(p)}</p>`).join("");
     $("printDate").textContent = t.printDate(new Date().toLocaleDateString(lang === "ja" ? "ja-JP" : lang === "fr" ? "fr-FR" : "en-GB"));
     renderReport(t);
+    $("loaded").textContent = data ? t.loaded(data.responses.length) : "";
 
     const res = $("results");
     if (!data || !data.responses.length) {
       $("exports").hidden = true;
-      res.innerHTML = `<div class="empty-state"><div class="line">${CB.STAGES.map((s) => `<div class="station"><span class="dot">${s === "B" ? "A" : s}</span><span class="name">${CB.esc(CB.STAGE_NAMES[lang][s])}</span></div>`).join("")}</div><p>${CB.esc(t.empty)}</p></div>`;
+      res.innerHTML = `<div class="empty-state"><div class="line">${CB.STAGES.map((s) => `<div class="station"><span class="dot">${s === "B" ? "A" : s}</span><span class="name">${CB.esc(CB.STAGE_NAMES[lang][s])}</span></div>`).join("")}</div><p>${CB.esc(t.empty)}</p>${savedHtml(t)}</div>`;
       return;
     }
     $("exports").hidden = false;
@@ -341,7 +387,7 @@
     const all = CB.analyse(shownResponses);
     const lv = CB.UI[lang].levels, rz = CB.UI[lang].resist;
 
-    const row = (label, sub, a, cls) => `<tr class="${cls || ""}"><th scope="row">${CB.esc(label)}<span class="n">${CB.esc(sub)}</span></th>
+    const row = (label, sub, a, cls, anchor) => `<tr class="${cls || ""}"><th scope="row">${anchor ? `<a href="#" data-goto="${anchor}">${CB.esc(label)}</a>` : CB.esc(label)}<span class="n">${CB.esc(sub)}</span></th>
       ${CB.STAGES.map((s) => { const st = a.status[s]; const first = a.barrier && a.barrier.stage === s;
         return `<td><span class="cell ${st}${first ? " first" : ""}" title="${CB.esc(lv[st])}">${a.scores[s] === null ? "" : a.scores[s].toFixed(1)}</span></td>`; }).join("")}
       <td>${a.resistance ? `<span class="pill pill-${a.resistance === "high" ? "barrier" : a.resistance === "moderate" ? "watch" : "ok"}">${CB.esc(rz[a.resistance])}</span>` : ""}</td>
@@ -356,7 +402,7 @@
         ${CB.STAGES.map((s) => `<th scope="col">${CB.esc(CB.STAGE_NAMES[lang][s])}</th>`).join("")}
         <th scope="col">${CB.esc(t.resist)}</th><th scope="col">${CB.esc(t.index)}</th></tr></thead><tbody>
         ${shown.length > 1 ? row(t.all, t.resp(all.n), all, "all") : ""}
-        ${shown.map((g) => row(g.name, t.resp(g.a.n), g.a)).join("")}
+        ${shown.map((g) => row(g.name, t.resp(g.a.n), g.a, "", "team-" + gs.indexOf(g))).join("")}
       </tbody></table></div>`;
 
       // Teams sorted: barrier first, then watch, then fine; within, lowest index first
@@ -365,7 +411,7 @@
         const a = g.a, bp = a.barrier, stName = bp ? CB.STAGE_NAMES[lang][bp.stage] : null;
         const verdict = !bp ? t.verdictOk : bp.kind === "barrier" ? t.verdictB(stName) : t.verdictW(stName);
         const acts = CB.ACTIONS[bp ? bp.stage : "R"][lang];
-        return `<article class="team">
+        return `<article class="team" id="team-${gs.indexOf(g)}">
           <div class="team-head"><div><h3>${CB.esc(g.name)}</h3><span class="note">${CB.esc(t.resp(a.n))}</span></div>
             <div class="idx"><b>${a.index}</b><span class="note">${CB.esc(t.adoption)}</span></div></div>
           ${lineHtml(a, lang, t)}
@@ -376,6 +422,7 @@
           <p class="verdict">${CB.esc(verdict)}</p>
           <h4 class="label" style="margin:0 0 8px">${CB.esc(t.actions)}</h4>
           <ul class="todo">${acts.map((x) => `<li>${CB.esc(x)}</li>`).join("")}</ul>
+          ${questionDetail(g.rs, lang, t)}
         </article>`;
       }).join("")}</div>`;
     }
@@ -401,7 +448,10 @@
   }
 
   // ---------- Events ----------
-  $("analyse").addEventListener("click", () => { build(); render(Page.lang); if (data && data.responses.length) $("results").scrollIntoView({ block: "start" }); });
+  let timer;
+  $("codes").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(() => { build(); render(Page.lang); }, 350); });
+  $("codes").addEventListener("paste", () => setTimeout(() => { build(); render(Page.lang); if (data && data.responses.length) $("report").scrollIntoView({ block: "nearest" }); }, 0));
+  $("expand").addEventListener("click", () => { $("inputPanel").classList.remove("collapsed"); $("codes").focus(); });
   $("clear").addEventListener("click", () => {
     $("codes").value = ""; csvRows = []; csvReport = null; $("csvFile").value = ""; build(); data = null; render(Page.lang); Page.toast(T[Page.lang].cleared);
   });
@@ -418,12 +468,21 @@
   $("csvOut").addEventListener("click", exportCsv);
   $("printOut").addEventListener("click", () => window.print());
   window.addEventListener("hashchange", () => location.reload());
+  $("results").addEventListener("click", (e) => {
+    const a = e.target.closest("[data-goto]");
+    if (!a) return;
+    e.preventDefault();
+    const card = $(a.dataset.goto);
+    card.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    card.classList.add("flash"); setTimeout(() => card.classList.remove("flash"), 1600);
+  });
 
   // ---------- Start ----------
   if (isDemo && !survey) {
     data = { responses: demoResponses(), report: { bad: 0, dup: 0, other: 0 } };
+    $("inputPanel").classList.add("collapsed");
   } else if (storeKey) {
-    try { const saved = localStorage.getItem(storeKey); if (saved) { $("codes").value = saved; build(); } } catch (e) { /* ignore */ }
+    try { const saved = localStorage.getItem(storeKey); if (saved) { $("codes").value = saved; build(); if (data && data.responses.length) $("inputPanel").classList.add("collapsed"); } } catch (e) { /* ignore */ }
   }
   Page.start(render);
 })();
